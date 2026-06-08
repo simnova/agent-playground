@@ -1,0 +1,37 @@
+{
+  "name": "agentPlayground",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run //#proxy dev --parallel",
+    "dev:direct": "PORTLESS=0 turbo run dev --filter=staff,public,api",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "knip": "knip",
+    "e18e": "e18e-cli",
+    "check-types": "turbo run check-types",
+    "codegen": "pnpm --filter api generate:schema && graphql-codegen --config codegen.ts",
+    "proxy": "portless proxy start",
+    "proxy:stop": "portless proxy stop",
+    "dev:portless": "portless"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.16",
+    "@e18e/cli": "^0.7.0",
+    "@graphql-codegen/cli": "^5.0.3",
+    "@graphql-codegen/client-preset": "^4.5.1",
+    "@graphql-codegen/typescript": "^4.1.2",
+    "@graphql-codegen/typescript-resolvers": "^4.1.0",
+    "@typescript/native-preview": "beta",
+    "knip": "^6.16.1",
+    "portless": "^0.14.0",
+    "turbo": "^2.9.16"
+  },
+  "packageManager": "pnpm@11.4.0",
+  "engines": {
+    "node": ">=18"
+  }
+}

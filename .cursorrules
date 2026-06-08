@@ -1,0 +1,19 @@
+# Cursor Rules
+
+This project is governed by the root `AGENTS.md`.
+
+Read `AGENTS.md` at the repository root for:
+- Overall philosophy
+- Skills, agents, and personas available in `.grok/`
+- Coding standards and architecture
+- How to work with the monorepo and the two UI apps (staff + public)
+
+Cursor-specific notes:
+- The `.grok/` and `agents/` directories contain reusable procedures and definitions.
+- For best results, include the root `AGENTS.md` + relevant skill files in your Cursor context when working on agent-related tasks.
+
+See also:
+- `CLAUDE.md` for Claude-oriented guidance
+- `.github/copilot-instructions.md` for Copilot
+
+Deeper directories may have their own `AGENTS.md` — those take precedence locally.

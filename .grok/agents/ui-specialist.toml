@@ -1,0 +1,6 @@
+description = "Specialized agent for working on the staff and public Vite + React + Ant Design UIs. Strong at component design, theming, state management with Apollo, and consistency with the shared @repo/ui library."
+default_capability_mode = "read-write"
+model = "grok-build"
+
+[prompt_file]
+.grok/agents/ui-specialist.md

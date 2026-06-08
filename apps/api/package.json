@@ -1,0 +1,33 @@
+{
+  "name": "api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "portless",
+    "dev:app": "bun --hot src/index.ts",
+    "start": "bun src/index.ts",
+    "build": "esbuild src/app.ts src/index.ts --bundle --platform=node --format=esm --target=node20 --outdir=dist --out-extension:.js=.js && esbuild src/functions/graphql.ts --bundle --platform=node --format=esm --target=node20 --outdir=dist/functions --out-extension:.js=.js --external:../app --external:@azure/functions --external:@marplex/hono-azurefunc-adapter",
+    "check-types": "tsgo --noEmit",
+    "lint": "biome check .",
+    "azure:dev": "func start",
+    "generate:schema": "bun scripts/print-schema.ts > schema.graphql",
+    "codegen": "pnpm generate:schema && graphql-codegen --config ../../codegen.ts"
+  },
+  "dependencies": {
+    "@apollo/server": "^4.12.1",
+    "@azure/functions": "^4.7.2",
+    "@marplex/hono-azurefunc-adapter": "^1.0.1",
+    "apollo-server-integration-hono": "^0.0.1",
+    "graphql": "^16.11.0",
+    "graphql-tag": "^2.12.6",
+    "hono": "^4.7.11",
+    "mongoose": "^9.6.3"
+  },
+  "devDependencies": {
+    "@repo/config-typescript": "workspace:*",
+    "@types/node": "^22.15.3",
+    "esbuild": "^0.25.5",
+    "mongodb-memory-server": "^11.2.0"
+  }
+}

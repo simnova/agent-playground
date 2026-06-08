@@ -1,0 +1,12 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "tsgo:build": {
+      "inputs": ["tsconfig*.json"],
+      "outputs": ["**/*.tsbuildinfo"]
+    },
+    "tsgo:noEmit": {
+      "inputs": ["tsconfig*.json", "**/*.ts", "**/*.tsx"]
+    }
+  }
+}

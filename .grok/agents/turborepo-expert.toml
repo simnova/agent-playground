@@ -1,0 +1,6 @@
+description = "Specialized agent for Turborepo + pnpm monorepo tasks, build pipelines, filtering, caching, and coordinating changes across the multiple apps and packages in this repository."
+default_capability_mode = "read-write"
+model = "grok-build"
+
+[prompt_file]
+.grok/agents/turborepo-expert.md

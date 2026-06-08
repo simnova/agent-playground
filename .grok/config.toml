@@ -1,0 +1,21 @@
+# Project configuration for agentPlayground (Grok)
+
+# Example project-scoped MCP servers (uncomment and configure as needed)
+# [mcp_servers.github]
+# command = "npx"
+# args = ["-y", "@modelcontextprotocol/server-github"]
+# env = { GITHUB_PERSONAL_ACCESS_TOKEN = "ghp_..." }
+
+[skills]
+# Additional paths to scan for skills beyond the defaults
+# paths = ["~/shared-team-skills"]
+
+[plugins]
+# Project-level plugins can be listed here
+
+[subagents]
+# Project-level overrides for subagent behavior if desired
+# enabled = true
+
+# You can also define project-specific roles or personas here in addition to the .toml files.
+# See the user guide for the full schema.

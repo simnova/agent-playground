@@ -1,0 +1,40 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": ["turbo.json", "pnpm-workspace.yaml"],
+      "project": ["**/*.{js,ts,tsx,json,md}"]
+    },
+    "apps/staff": {
+      "entry": ["src/main.tsx", "vite.config.ts", "index.html"],
+      "project": ["src/**/*.{ts,tsx}", "vite.config.ts"]
+    },
+    "apps/public": {
+      "entry": ["src/main.tsx", "vite.config.ts", "index.html"],
+      "project": ["src/**/*.{ts,tsx}", "vite.config.ts"]
+    },
+    "apps/api": {
+      "entry": ["src/index.ts", "src/app.ts"],
+      "project": ["src/**/*.{ts,tsx}"]
+    },
+    "apps/web": {
+      "entry": ["app/**/*.{ts,tsx}", "next.config.js"],
+      "project": ["app/**/*.{ts,tsx}"]
+    },
+    "apps/docs": {
+      "entry": ["app/**/*.{ts,tsx}", "next.config.js"],
+      "project": ["app/**/*.{ts,tsx}"]
+    },
+    "packages/ui": {
+      "entry": ["src/antd-provider.tsx"],
+      "project": ["src/**/*.{ts,tsx}"]
+    }
+  },
+  "ignore": ["**/*.d.ts"],
+  "ignoreBinaries": ["turbo", "func", "biome", "e18e"],
+  "ignoreWorkspaces": ["packages/config-typescript"],
+  "ignoreDependencies": ["@types/*", "typescript", "@typescript/native-preview", "tailwindcss"],
+  "typescript": {
+    "config": ["tsconfig.json", "apps/*/tsconfig.json", "packages/*/tsconfig.json"]
+  }
+}

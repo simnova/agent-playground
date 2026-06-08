@@ -1,0 +1,4 @@
+description = "Front-end specialist for React + Ant Design + Apollo Client UIs (staff/public + @repo/ui)"
+default_capability_mode = "read-write"
+model = "grok-build"
+prompt_file = ".grok/personas/front-end-developer.toml"  # reuses the detailed persona instructions

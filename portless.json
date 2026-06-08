@@ -1,0 +1,16 @@
+{
+  "apps": {
+    "apps/staff": {
+      "name": "staff",
+      "script": "dev:app"
+    },
+    "apps/public": {
+      "name": "public",
+      "script": "dev:app"
+    },
+    "apps/api": {
+      "name": "api",
+      "script": "dev:app"
+    }
+  }
+}

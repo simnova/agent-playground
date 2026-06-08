@@ -1,0 +1,32 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**", "dist/**"]
+    },
+    "check-types": {
+      "dependsOn": ["^check-types", "//#codegen"],
+      "outputs": ["dist/tsconfig.tsbuildinfo", "**/*.tsbuildinfo"]
+    },
+    "//#codegen": {
+      "dependsOn": ["api#generate:schema"],
+      "outputs": ["apps/*/src/gql/**", "apps/api/src/graphql/resolvers.types.ts", "apps/api/schema.graphql"],
+      "cache": true
+    },
+    "generate:schema": {
+      "cache": false,
+      "outputs": ["schema.graphql"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "//#proxy": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}

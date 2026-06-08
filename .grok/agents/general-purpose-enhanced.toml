@@ -1,0 +1,6 @@
+description = "Enhanced general-purpose agent for this specific monorepo. Combines broad capabilities with awareness of the staff/public UIs, shared packages, Ant Design usage, GraphQL backend, Turborepo, portless, Biome, and the agent capabilities system itself."
+default_capability_mode = "all"
+model = "grok-build"
+
+[prompt_file]
+.grok/agents/general-purpose-enhanced.md

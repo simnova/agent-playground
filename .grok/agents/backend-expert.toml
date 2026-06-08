@@ -1,0 +1,6 @@
+description = "Specialized agent for the Hono + Apollo GraphQL backend in apps/api. Strong at schema design, resolvers, Azure Functions compatibility, and keeping the API clean and efficient."
+default_capability_mode = "read-write"
+model = "grok-build"
+
+[prompt_file]
+.grok/agents/backend-expert.md

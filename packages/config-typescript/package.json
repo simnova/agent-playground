@@ -1,0 +1,28 @@
+{
+  "name": "@repo/config-typescript",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "main": "./tsconfig.base.json",
+  "files": [
+    "tsconfig.base.json",
+    "tsconfig.node.json",
+    "tsconfig.next.json",
+    "tsconfig.react.json",
+    "tsconfig.vitest.json"
+  ],
+  "exports": {
+    "./base": "./tsconfig.base.json",
+    "./node": "./tsconfig.node.json",
+    "./next": "./tsconfig.next.json",
+    "./react": "./tsconfig.react.json",
+    "./vitest": "./tsconfig.vitest.json"
+  },
+  "scripts": {
+    "tsgo:build": "tsgo --build",
+    "tsgo:noEmit": "tsgo --noEmit"
+  },
+  "devDependencies": {
+    "@typescript/native-preview": "beta"
+  }
+}
