@@ -1,31 +1,27 @@
-# Turborepo starter
+# agentPlayground
 
-This Turborepo starter is maintained by the Turborepo core team.
+A playground and library for AI agent capabilities (focused on Grok but portable across tools).
 
-## Using this example
-
-Run the following command:
-
-```sh
-npx create-turbo@latest
-```
+This is a custom Turborepo monorepo (not the vanilla starter).
 
 ## What's inside?
 
-This Turborepo includes the following packages/apps:
+This Turborepo includes the following apps and packages:
 
-### Apps and Packages
+### Apps
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `staff`: a static UI site (Vite + React + Apollo Client) for staff/internal use, connecting to the shared backend
-- `public`: a static UI site (Vite + React + Apollo Client) for public-facing use, connecting to the same shared backend
-- `api`: Bun + Hono server with Apollo GraphQL, configured for Azure Functions (v4 Node model via `@marplex/hono-azurefunc-adapter`)
-- `@repo/ui`: a stub React component library
-- `@repo/config-typescript`: shared TypeScript configuration (base, node, next, react, vitest) modeled after quality-focused DDD monorepos like CellixJS
-- Official **turborepo** skill (from vercel/turborepo) installed via `pnpm dlx skills add ...` into `.agents/skills/turborepo/` (universal for many agents) and `.grok/skills/turborepo/` (Grok-native). Includes authoritative guidance on task pipelines, caching, `--filter` / `--affected`, internal packages, monorepo best practices, etc. This is the recommended skill for all Turborepo work in the repo.
+- `staff`: Internal staff portal — Vite + React + TypeScript + Ant Design (primary UI library) + Apollo Client. Blue theme.
+- `public`: Public / customer-facing site — same stack as staff (green theme).
+- `api`: Backend — Bun + Hono + Apollo GraphQL + Mongoose (with mongodb-memory-server for tests). Also has Azure Functions adapter.
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+### Packages
+
+- `@repo/ui`: Shared React components, including the theme-aware `AntdProvider`.
+- `@repo/config-typescript`: Strict TypeScript configuration (base, react, node, vitest, etc.) + tsgo support.
+
+- Official **turborepo** skill (from vercel/turborepo) is available in both `.grok/skills/turborepo/` (Grok-native) and `agents/skills/turborepo/` (portable). Use it for any monorepo / turbo questions.
+
+Each package/app is 100% [TypeScript](https://www.typescriptlang.org/). (Using TypeScript 7 + `tsgo` for checking.)
 
 ### TypeScript 7 + tsgo
 
@@ -53,33 +49,30 @@ To build all apps and packages, run the following command:
 With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
 
 ```sh
-cd my-turborepo
 turbo build
 ```
 
 Without global `turbo`, use your package manager:
 
 ```sh
-cd my-turborepo
 npx turbo build
 pnpm dlx turbo build
 pnpm exec turbo build
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+You can build a specific app or package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
 
 With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
 
 ```sh
-turbo build --filter=docs
+turbo build --filter=staff
 ```
 
 Without global `turbo`:
 
 ```sh
-npx turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+npx turbo build --filter=staff
+pnpm exec turbo build --filter=staff
 ```
 
 ### Develop
@@ -89,33 +82,29 @@ To develop all apps and packages, run the following command:
 With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
 
 ```sh
-cd my-turborepo
 turbo dev
 ```
 
 Without global `turbo`, use your package manager:
 
 ```sh
-cd my-turborepo
 npx turbo dev
-pnpm exec turbo dev
 pnpm exec turbo dev
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+You can develop a specific app by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
 
 With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
 
 ```sh
-turbo dev --filter=web
+turbo dev --filter=staff
 ```
 
 Without global `turbo`:
 
 ```sh
-npx turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
+npx turbo dev --filter=staff
+pnpm exec turbo dev --filter=staff
 ```
 
 ### Local Development with Portless (HTTPS .localhost URLs)
@@ -182,16 +171,13 @@ By default, Turborepo will cache locally. To enable Remote Caching you will need
 With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
 
 ```sh
-cd my-turborepo
 turbo login
 ```
 
 Without global `turbo`, use your package manager:
 
 ```sh
-cd my-turborepo
 npx turbo login
-pnpm exec turbo login
 pnpm exec turbo login
 ```
 
@@ -209,7 +195,6 @@ Without global `turbo`:
 
 ```sh
 npx turbo link
-pnpm exec turbo link
 pnpm exec turbo link
 ```
 

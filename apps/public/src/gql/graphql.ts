@@ -9,11 +9,11 @@ export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> =
 export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: { input: string; output: string; }
-  String: { input: string; output: string; }
-  Boolean: { input: boolean; output: boolean; }
-  Int: { input: number; output: number; }
-  Float: { input: number; output: number; }
+  ID: { input: string; output: string };
+  String: { input: string; output: string };
+  Boolean: { input: boolean; output: boolean };
+  Int: { input: number; output: number };
+  Float: { input: number; output: number };
 };
 
 export type Message = {
@@ -27,7 +27,6 @@ export type Mutation = {
   addMessage: Message;
 };
 
-
 export type MutationAddMessageArgs = {
   text: Scalars['String']['input'];
 };
@@ -38,18 +37,70 @@ export type Query = {
   messages: Array<Message>;
 };
 
-export type GetMessagesQueryVariables = Exact<{ [key: string]: never; }>;
+export type GetMessagesQueryVariables = Exact<{ [key: string]: never }>;
 
-
-export type GetMessagesQuery = { __typename?: 'Query', hello: string, messages: Array<{ __typename?: 'Message', id: string, text: string }> };
+export type GetMessagesQuery = { __typename?: 'Query'; hello: string; messages: Array<{ __typename?: 'Message'; id: string; text: string }> };
 
 export type AddMessageMutationVariables = Exact<{
   text: Scalars['String']['input'];
 }>;
 
+export type AddMessageMutation = { __typename?: 'Mutation'; addMessage: { __typename?: 'Message'; id: string; text: string } };
 
-export type AddMessageMutation = { __typename?: 'Mutation', addMessage: { __typename?: 'Message', id: string, text: string } };
-
-
-export const GetMessagesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMessages"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"messages"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"text"}}]}},{"kind":"Field","name":{"kind":"Name","value":"hello"}}]}}]} as unknown as DocumentNode<GetMessagesQuery, GetMessagesQueryVariables>;
-export const AddMessageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AddMessage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"text"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addMessage"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"text"},"value":{"kind":"Variable","name":{"kind":"Name","value":"text"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"text"}}]}}]}}]} as unknown as DocumentNode<AddMessageMutation, AddMessageMutationVariables>;
+export const GetMessagesDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetMessages' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'messages' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'text' } },
+              ],
+            },
+          },
+          { kind: 'Field', name: { kind: 'Name', value: 'hello' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetMessagesQuery, GetMessagesQueryVariables>;
+export const AddMessageDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'AddMessage' },
+      variableDefinitions: [
+        { kind: 'VariableDefinition', variable: { kind: 'Variable', name: { kind: 'Name', value: 'text' } }, type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } } },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'addMessage' },
+            arguments: [{ kind: 'Argument', name: { kind: 'Name', value: 'text' }, value: { kind: 'Variable', name: { kind: 'Name', value: 'text' } } }],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'text' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<AddMessageMutation, AddMessageMutationVariables>;

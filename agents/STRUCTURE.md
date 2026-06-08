@@ -34,10 +34,12 @@ Located in `agents/` at the repo root. These are designed to be readable and use
 This project defines a full cross-functional team using the agent/persona system (see `.grok/personas/` and `agents/personas/`, plus roles in `.grok/agents/` and `agents/roles/`):
 
 - front-end-developer, back-end-developer, ux-designer, product-owner, architect, orchestrator.
+- **muse** — Deep specialist in the historical BankBuckets long-term budgeting methodology (percent-driven automatic allocation, MaxAmount caps, SpillOverOrder waterfall for prioritized long-term goals, hierarchical buckets, Goal linkage). Has **exclusive** access to the full source tree at `/Volumes/files/src/bankbuckets`. The product-owner consults the muse closely for scope that realizes this methodology in the modern codebase.
+- **muse-eyes** — Vision-enabled partner (Grok models) to the muse. Has full access to the agentPlayground codebase and can analyze images (old BankBuckets designs/screenshots in the historical repo or current UIs). The two converse to drive visual and implementation direction.
 
 The main agent acts as **orchestrator** (servant leader) and uses `spawn_subagent` (with embedded persona instructions + cross-role context) to run the team. Use `todo_write` for shared visibility. This enables balanced, multi-perspective work on complex tasks while keeping progress and quality in check.
 
-See the updated root `AGENTS.md` (Team section) and the Grok user-guide docs on subagents/personas for details on usage and "conversing" via spawn → output → resume/spawn handoffs.
+See the updated root `AGENTS.md` (Team section) and the Grok user-guide docs on subagents/personas for details on usage and "conversing" via spawn → output → resume/spawn handoffs. The muse + muse-eyes pair is a special consulting relationship (product-owner works with muse; muse works with muse-eyes for images and codebase translation).
 - Cursor
 - GitHub Copilot / Codex
 - Aider, Continue.dev, Cline, Windsurf, etc.

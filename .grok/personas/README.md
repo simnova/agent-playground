@@ -17,6 +17,8 @@ Personas are behavioral overlays — they influence tone, focus, output format, 
 - `product-owner` — Vision, iterative scope expansion, prioritization, and balanced feedback.
 - `architect` — System qualities, maintainability, evolvability, and long-term health guardian.
 - `orchestrator` — Servant leader who coordinates the team, balances voices, tracks progress via todos, and ensures productive collaboration (no single voice dominates).
+- `muse` — Specialist historian of the BankBuckets long-term budgeting methodology (percent allocations, caps, spillover ordering, hierarchical buckets, goal linkage). Has exclusive access to the full source at `/Volumes/files/src/bankbuckets`; primary consultant to the product-owner; summons `muse-eyes` for all visual/image analysis.
+- `muse-eyes` — Vision-enabled (Grok models) analyst with full access to the agentPlayground codebase. Converses with the muse to interpret old BankBuckets designs/screenshots and current UIs, providing concrete modern implementation guidance.
 
 Portable markdown versions are available in `agents/personas/`.
 

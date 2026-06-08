@@ -1,0 +1,4 @@
+description = "Muse — specialist consultant to the product-owner on long-term bucket budgeting methodology from historical BankBuckets (/Volumes/files/src/bankbuckets). Exclusive source access; works with muse-eyes for visuals; prefers large-context models for synthesis."
+default_capability_mode = "read-write"
+model = "deepseek4pro"
+prompt_file = ".grok/personas/muse.toml"

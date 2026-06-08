@@ -2,10 +2,7 @@ import type { CodegenConfig } from '@graphql-codegen/cli';
 
 const config: CodegenConfig = {
   schema: 'apps/api/schema.graphql',
-  documents: [
-    'apps/staff/src/**/*.{ts,tsx}',
-    'apps/public/src/**/*.{ts,tsx}',
-  ],
+  documents: ['apps/staff/src/**/*.{ts,tsx}', 'apps/public/src/**/*.{ts,tsx}'],
   ignoreNoDocuments: true,
   generates: {
     // Typed GraphQL client code for the Staff Vite app

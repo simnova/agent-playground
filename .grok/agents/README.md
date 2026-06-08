@@ -14,6 +14,9 @@ Each role typically has:
 - `turborepo-expert` — Focused on monorepo coordination, Turborepo, portless, and cross-package work.
 - `general-purpose-enhanced` — A stronger general agent with deep awareness of this specific monorepo and its agent system.
 
+**New Specialized**
+- `muse` and `muse-eyes` — See Team Roles above. The muse brings historical BankBuckets long-term budgeting inspiration (with exclusive source access); muse-eyes supplies vision and codebase translation.
+
 **Team Roles (for orchestrated collaboration)**
 - `front-end-developer` — React + Ant Design + Apollo Client specialist.
 - `back-end-developer` — Bun/Hono/Apollo GraphQL + Mongoose specialist.
@@ -21,6 +24,8 @@ Each role typically has:
 - `product-owner` — Vision, scope expansion, prioritization, and feedback.
 - `architect` — System qualities and long-term maintainability.
 - `orchestrator` — Servant leader / team coordinator (use as the main agent or a coordination subagent).
+- `muse` — BankBuckets methodology specialist (long-term % + spillover + goal budgeting); exclusive access to old source; consultant to product-owner; partners with muse-eyes for visuals.
+- `muse-eyes` — Vision + codebase partner to the muse (Grok models for images + full agentPlayground access).
 
 Portable (non-Grok) versions of role descriptions live in `agents/roles/`.
 

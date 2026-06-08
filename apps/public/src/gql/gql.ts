@@ -1,6 +1,7 @@
 /* eslint-disable */
-import * as types from './graphql';
+
 import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
+import * as types from './graphql';
 
 /**
  * Map of all GraphQL operations in the project.
@@ -14,12 +15,12 @@ import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
-    "\n  query GetMessages {\n    messages {\n      id\n      text\n    }\n    hello\n  }\n": typeof types.GetMessagesDocument,
-    "\n  mutation AddMessage($text: String!) {\n    addMessage(text: $text) {\n      id\n      text\n    }\n  }\n": typeof types.AddMessageDocument,
+  '\n  query GetMessages {\n    messages {\n      id\n      text\n    }\n    hello\n  }\n': typeof types.GetMessagesDocument;
+  '\n  mutation AddMessage($text: String!) {\n    addMessage(text: $text) {\n      id\n      text\n    }\n  }\n': typeof types.AddMessageDocument;
 };
 const documents: Documents = {
-    "\n  query GetMessages {\n    messages {\n      id\n      text\n    }\n    hello\n  }\n": types.GetMessagesDocument,
-    "\n  mutation AddMessage($text: String!) {\n    addMessage(text: $text) {\n      id\n      text\n    }\n  }\n": types.AddMessageDocument,
+  '\n  query GetMessages {\n    messages {\n      id\n      text\n    }\n    hello\n  }\n': types.GetMessagesDocument,
+  '\n  mutation AddMessage($text: String!) {\n    addMessage(text: $text) {\n      id\n      text\n    }\n  }\n': types.AddMessageDocument,
 };
 
 /**
@@ -39,14 +40,16 @@ export function gql(source: string): unknown;
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  query GetMessages {\n    messages {\n      id\n      text\n    }\n    hello\n  }\n"): (typeof documents)["\n  query GetMessages {\n    messages {\n      id\n      text\n    }\n    hello\n  }\n"];
+export function gql(source: '\n  query GetMessages {\n    messages {\n      id\n      text\n    }\n    hello\n  }\n'): (typeof documents)['\n  query GetMessages {\n    messages {\n      id\n      text\n    }\n    hello\n  }\n'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  mutation AddMessage($text: String!) {\n    addMessage(text: $text) {\n      id\n      text\n    }\n  }\n"): (typeof documents)["\n  mutation AddMessage($text: String!) {\n    addMessage(text: $text) {\n      id\n      text\n    }\n  }\n"];
+export function gql(
+  source: '\n  mutation AddMessage($text: String!) {\n    addMessage(text: $text) {\n      id\n      text\n    }\n  }\n'
+): (typeof documents)['\n  mutation AddMessage($text: String!) {\n    addMessage(text: $text) {\n      id\n      text\n    }\n  }\n'];
 
 export function gql(source: string) {
   return (documents as any)[source] ?? {};
 }
 
-export type DocumentType<TDocumentNode extends DocumentNode<any, any>> = TDocumentNode extends DocumentNode<  infer TType,  any>  ? TType  : never;
+export type DocumentType<TDocumentNode extends DocumentNode<any, any>> = TDocumentNode extends DocumentNode<infer TType, any> ? TType : never;

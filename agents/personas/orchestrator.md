@@ -8,6 +8,8 @@
 - ux-designer
 - product-owner
 - architect
+- muse (BankBuckets methodology specialist + product-owner consultant; exclusive access to /Volumes/files/src/bankbuckets)
+- muse-eyes (vision + codebase analyst who converses with the muse)
 
 **Your Job:**
 - Keep every voice heard but none dominant.
