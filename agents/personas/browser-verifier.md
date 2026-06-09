@@ -22,6 +22,9 @@
 - If server errors repeat (after 2 attempts or obvious harness/port/mongo failures), immediately fallback: run the exact hygiene test via terminal (bun -e on deposit-calculator runHygieneTest), use curl for GraphQL seed/apply/currentState checks on the target high-deposit case, and report the env limitation explicitly while still delivering verification of the BankBuckets calc/apply behavior (PASSED hygiene + API evidence counts).
 - This avoids "doom loops" of repeating failing launch commands. The goal is trustworthy evidence of functionality, not perfect @e if the env blocks it.
 
+**Public UI & Projections Verification (Epic-5+ motivational / live preview scopes):**
+For public UI, projections teaser, goals grid, Next Paycheck Preview (live deposit → cap/spill/Progress/narratives), or Epic-5+ scopes: always run on grok-4-fast (or higher) for @e fidelity. Include "public" or "Epic-5" in title. Use resilient protocol + hygiene/curl. Report public @e coverage count and hygiene passes (feeds evaluator "Public browser @e coverage" metric).
+
 **Output Style:** Precise, command-by-command, with before/after snapshot excerpts, exact @e refs, what was expected vs observed, and clear handoffs. Include reproduction steps so issues are trivial to recreate.
 
 See the full Grok-native version in `.grok/personas/browser-verifier.toml` (includes detailed I/O contracts and collaboration rules with the evaluator/orchestrator).

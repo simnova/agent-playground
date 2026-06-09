@@ -237,10 +237,34 @@ function generateMarkdownReport(report: any, workspace: string): string {
     lines.push(``);
   }
 
+  // Auto-capture public @e + hygiene coverage (per agent-evaluator refinement for public/Epic-5 scopes)
+  // Scans committed screenshots (parallel to how browser-verifier artifacts are treated).
+  // For full @eN counts, the calling evaluator should also grep the specific verifier session terminal logs.
+  try {
+    const { readdirSync, existsSync } = require('fs');
+    const shotsDir = 'screenshots';
+    let publicShotCount = 0;
+    let publicShotNames: string[] = [];
+    if (existsSync(shotsDir)) {
+      const files = readdirSync(shotsDir);
+      publicShotNames = files.filter((f: string) => f.startsWith('bv-public-'));
+      publicShotCount = publicShotNames.length;
+    }
+    lines.push(`## Public Browser Verification Coverage (Epic-5+ / projections / live preview)`);
+    lines.push(`- **Public browser @e coverage:** ${publicShotCount} bv-public screenshots committed (initial, high-deposit live, post-apply, baseline).`);
+    lines.push(`  Recent: ${publicShotNames.slice(-3).join(', ') || 'none'}`);
+    lines.push(`- **Hygiene passes:** See latest verifier report + runHygieneTest() on 4-bucket 20000 high-deposit case (PASSED = cap/spill correct, no NaN).`);
+    lines.push(`- Note: Full unique @eN count (e.g. e1-e39) comes from the verifier sub's snapshot -i + terminal logs (grep '@e[0-9]*'). Feed into next evaluator for "public @e pass rate" trend.`);
+    lines.push(``);
+  } catch (e) {
+    // non-fatal
+  }
+
   lines.push(`## Interpretation (for self-improvement)`);
   lines.push(`- High volume of low-ms turns on deepseek-4-fast indicates successful use of juniors.`);
   lines.push(`- Descaling after grok-4-* work should show subsequent cheap subagents handling follow-ups.`);
   lines.push(`- Run this periodically via agent-evaluator to track shifts in tier utilization and cost per value.`);
+  lines.push(`- Public @e coverage + hygiene passes are high-signal, low-token ground truth for "did the BankBuckets motivational UI + calc actually work for a user?".`);
   lines.push(``);
   lines.push(`*This report is generated as part of the work being accomplished and committed for visibility (parallel to screenshots).*`);
 
