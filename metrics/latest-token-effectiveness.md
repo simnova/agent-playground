@@ -370,3 +370,17 @@ This delivers the core engine for hierarchical % subdivision + per-level caps/sp
 Local commit created for the core + test changes + metrics note. (Gql generated files that appeared in working tree were cleaned as unrelated to this scope.)
 
 (End of Brief 4 core delivery note.)
+
+**Brief 4 full vertical close (core v2 + FE UI descale):** After BE junior delivered recursive hierarchy + 3 new tests (6 total passing), cheap front-end junior sub 019eaa47-7730-7840-8a93-74a96f7d0137 (248.8s, 31 tools, 1 turn) completed the UI half exactly per PO Brief 4 success criteria (condensed prompt, fresh persona read, explicit first actions on metrics/PO brief + core + App.tsx sections, todo_write, only edited existing App.tsx files, v1 flat + all prior @e preserved).
+
+- Staff: multi-level parent config editor (per-bucket Select parent picker in renderBucketEditor rows, cycle prevention via wouldCreateCycle/getAllDescendants, reorder within same parent only, depth indent via recursive renderConfigEditorTree + renderBucketEditor; "multi-level-config-editor", `config-parent-picker-${id}`, `config-row-nested-${id}`).
+- Both apps: enhanced antd Tree rendering for arbitrary depth (existing recursion now surfaced with indicators); live sub-bucket +$ deltas (via reused computeLiveAllocations + livePreview + serverBuckets parent/children); 'funded via parent' purple/cyan Tags (`hierarchy-funding-${id}` "via {parent}"); goal contributions flowing through levels (subtree sums via getSubtreeBucketIds on linkedDirect + totalSavedForGoal in renderGoalCard / renderPublicGoalCard with `goal-via-parent-${g.id}` tags).
+- New @e-refs (grep confirmed >>6 total new usages beyond the 6 patterns): staff 5+ (`tree-node-nested-*`, `hierarchy-funding-*`, `config-parent-picker-*`, `goal-via-parent-*`, `multi-level-config-editor`, `config-row-nested-*`, `live-preview-nested-*`, `hierarchy-funding-live-*`); public 4+ (`tree-node-nested-*`, `hierarchy-funding-*`, `goal-via-parent-*`, `preview-nested-*`, `hierarchy-funding-preview-*`); all 19 prior staff + 40 prior public @e untouched.
+- Comments/headers: "Brief 4 (po-brief-4-hierarchy-v2)" + "epic-4 + Brief 4 hierarchy v2" / "Epic-5 + Brief 4 hierarchy v2".
+- Verification: biome clean on changes (pre-existing only); all prior @e + flat behavior + GQL mappings preserved; core tests still 6/6 passing (reconfirmed post-UI); matches metrics criteria + task.
+
+This is a clean BE->FE descale (per PO plan and sub's own "Ready for descale" note): core v2 engine + tests first, then UI editor/Trees/flows/@e on top. Full Brief 4 vertical now in place (hierarchical % subdivision + spillover visualized and configurable with live previews + goal impact). New surface area ready for browser-verifier (public/Epic-5 on grok-4-fast) + more @e coverage.
+
+Local commit created for the two App.tsx + metrics note. (Part of post-75min cycle with PO briefs, multiple cheap juniors, descales, infra wins, hygiene always PASSED, @e growth.)
+
+(End of Brief 4 full delivery note.)

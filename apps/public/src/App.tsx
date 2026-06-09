@@ -255,6 +255,7 @@ function App() {
   }, [depositAmount, serverBuckets]);
 
   // Read-mostly Tree data for "My Buckets" (public version of staff hierarchy; current + this-deposit delta)
+  // Brief 4: 2+ level hierarchies with live sub-bucket +$ deltas (reuse computeLiveAllocations from core + server parent/children data for structure); 'funded via parent' indicators + tree-node-nested-* / hierarchy-funding-* @e.
   const treeData: any[] = useMemo(() => {
     const src = serverBuckets;
     const roots = src.filter((b) => !b.parentId).sort((a, b) => a.order - b.order);
@@ -268,13 +269,19 @@ function App() {
         .map((gid) => goals.find((g: any) => g.id === gid)?.name)
         .filter(Boolean)
         .join(', ');
+      const parentForTag = src.find((s) => s.id === b.parentId);
       const title = (
-        <span>
+        <span data-e-ref={`tree-node-nested-${b.id}`}>
           <strong>{b.name}</strong>{' '}
           <Tag color="green" style={{ marginLeft: 6, fontSize: 13 }}>
             {b.percent.toFixed(0)}%
           </Tag>
           {b.maxAmount && <Tag style={{ marginLeft: 4 }}>cap ${b.maxAmount}</Tag>}
+          {b.parentId && parentForTag && (
+            <Tag color="cyan" style={{ marginLeft: 4, fontSize: 10 }} data-e-ref={`hierarchy-funding-${b.id}`}>
+              funded via {parentForTag.name}
+            </Tag>
+          )}
           <Progress percent={currentPct} size="small" style={{ width: 110, marginLeft: 10, verticalAlign: 'middle' }} strokeColor="#52c41a" aria-label={`${b.name} current progress`} />
           {alloc && alloc.allocated > 0.01 && <span style={{ marginLeft: 8, color: '#4ade80', fontSize: 12 }}>+${alloc.allocated.toFixed(0)} this deposit</span>}
           {linkedNames && (
@@ -409,12 +416,23 @@ function App() {
   };
 
   // Public goal card (hoverable, Avatar letter reuse from staff, Progress, community mock Tags per ux wireframes, actions)
+  // Brief 4: projSaved now includes subtree (linked + descendants via getSubtree) for goal contributions flowing through levels (reuse livePreview + server hierarchy). Added goal-via-parent-* ref.
   const renderPublicGoalCard = (g: any) => {
+    const getSubtreeIds = (rootId: string, buckets: BucketLike[]): string[] => {
+      const kids = buckets.filter((bb) => bb.parentId === rootId).map((bb) => bb.id);
+      return [rootId, ...kids, ...kids.flatMap((k) => getSubtreeIds(k, buckets))];
+    };
     const serverLinked = serverBuckets.filter((b) => b.linkedGoalIds.includes(g.id));
     const localLinkedIds = localLinks[g.id] || [];
-    const linkedBuckets = [...serverLinked, ...serverBuckets.filter((b) => localLinkedIds.includes(b.id) && !serverLinked.some((s) => s.id === b.id))];
-    const projSaved = linkedBuckets.reduce((s, b) => s + (livePreview.projectedBalances[b.id] ?? b.currentBalance), 0);
+    const directLinked = [...serverLinked, ...serverBuckets.filter((b) => localLinkedIds.includes(b.id) && !serverLinked.some((s) => s.id === b.id))];
+    const allSubtree = new Set<string>();
+    directLinked.forEach((lb) => getSubtreeIds(lb.id, serverBuckets).forEach((id) => allSubtree.add(id)));
+    const projSaved = Array.from(allSubtree).reduce((s, sid) => {
+      const bb = serverBuckets.find((x) => x.id === sid);
+      return s + (livePreview.projectedBalances[sid] ?? (bb?.currentBalance || 0));
+    }, 0);
     const progressToGoal = Math.min(100, (projSaved / (g.targetAmount || 1)) * 100);
+    const hasLevelFlow = directLinked.some((lb) => serverBuckets.some((bb) => bb.parentId === lb.id));
 
     return (
       <Card
@@ -450,9 +468,14 @@ function App() {
 
         {g.description && <div style={{ fontSize: 11, color: '#71717a', marginTop: 6, lineHeight: 1.3 }}>{g.description}</div>}
 
-        {linkedBuckets.length > 0 && (
+        {directLinked.length > 0 && (
           <Tag color="blue" style={{ marginTop: 6, fontSize: 10 }}>
-            Linked to {linkedBuckets.length} bucket(s)
+            Linked to {directLinked.length} bucket(s)
+          </Tag>
+        )}
+        {hasLevelFlow && (
+          <Tag color="geekblue" style={{ marginTop: 6, fontSize: 10 }} data-e-ref={`goal-via-parent-${g.id}`}>
+            contributions flow via sub-levels
           </Tag>
         )}
 
@@ -497,7 +520,7 @@ function App() {
               </Typography.Title>
               <Typography.Text type="secondary">Vite + React + Apollo Client → Shared Hono + Apollo Backend (Ant Design) • Green motivational theme</Typography.Text>
             </div>
-            <div style={{ fontSize: 12, padding: '4px 12px', background: '#052e16', border: '1px solid #166534', borderRadius: 999, color: '#4ade80' }}>Public UI (Vite + antd) — Epic-5 views</div>
+            <div style={{ fontSize: 12, padding: '4px 12px', background: '#052e16', border: '1px solid #166534', borderRadius: 999, color: '#4ade80' }}>Public UI (Vite + antd) — Epic-5 + Brief 4 hierarchy v2</div>
           </div>
 
           {/* Server hello / endpoint (reused pattern, small) */}
@@ -585,7 +608,7 @@ function App() {
                   const estN = remainingToCap && per > 0.01 ? Math.max(1, Math.ceil(remainingToCap / per)) : null;
                   const narrative = alloc.capped ? 'at cap (spill protected priorities)' : estN ? `filling fast — cap in ~${estN} deposits` : 'building steadily toward your future';
                   return (
-                    <List.Item key={alloc.bucketId} style={{ padding: '6px 0' }}>
+                    <List.Item key={alloc.bucketId} style={{ padding: '6px 0' }} data-e-ref={`preview-nested-${alloc.bucketId}`}>
                       <div style={{ width: '100%' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, alignItems: 'center' }}>
                           <span>
@@ -594,6 +617,11 @@ function App() {
                               {b?.percent?.toFixed(0)}%
                             </Tag>
                             <span style={{ color: '#52c41a', fontFamily: 'monospace' }}>${alloc.allocated.toFixed(0)}</span>
+                            {b?.parentId && (
+                              <Tag color="cyan" style={{ marginLeft: 4, fontSize: 10 }} data-e-ref={`hierarchy-funding-preview-${alloc.bucketId}`}>
+                                via parent
+                              </Tag>
+                            )}
                             {b?.linkedGoalIds && b.linkedGoalIds.length > 0 && (
                               <Tag style={{ fontSize: 10, marginLeft: 4 }} color="blue" data-e-ref={`preview-linked-${alloc.bucketId}`}>
                                 →{' '}

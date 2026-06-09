@@ -180,6 +180,7 @@ function App() {
   const isPercentValid = Math.abs(currentTotalPercent - 100) < 0.5; // tolerance for float sliders
 
   // Build antd Tree data for hierarchy visualization (maps muse-eyes "tree/hierarchy (indented ul with lines, tree_node graphics)" + % + progress indicators)
+  // Brief 4: supports 2+ levels (recursion was prepared); live sub-bucket +$ deltas via computeLiveAllocations (reused); 'funded via parent' + tree-node-nested-* / hierarchy-funding-* data-e-refs added.
   const treeData: any[] = useMemo(() => {
     const src = editedBuckets.length ? editedBuckets : serverBuckets;
     const roots = src.filter((b) => !b.parentId).sort((a, b) => a.order - b.order);
@@ -190,13 +191,19 @@ function App() {
       const pctOfMax = Math.min(100, Math.round((previewBal / max) * 100));
       const alloc = livePreview.allocations.find((a) => a.bucketId === b.id);
       const delta = alloc ? alloc.allocated : 0;
+      const parentForTag = src.find((s) => s.id === b.parentId);
       const title = (
-        <span>
+        <span data-e-ref={`tree-node-nested-${b.id}`}>
           <strong>{b.name}</strong>{' '}
           <Tag color="blue" style={{ marginLeft: 6 }}>
             {b.percent.toFixed(0)}%
           </Tag>
           {b.maxAmount && <Tag style={{ marginLeft: 4 }}>max ${b.maxAmount}</Tag>}
+          {b.parentId && parentForTag && (
+            <Tag color="purple" style={{ marginLeft: 4 }} data-e-ref={`hierarchy-funding-${b.id}`}>
+              via {parentForTag.name}
+            </Tag>
+          )}
           <span style={{ marginLeft: 8, color: '#52c41a' }}>+${delta.toFixed(0)}</span>
           <Progress percent={pctOfMax} size="small" style={{ width: 120, marginLeft: 12, verticalAlign: 'middle' }} strokeColor={alloc?.capped ? '#faad14' : '#52c41a'} />
         </span>
@@ -212,24 +219,67 @@ function App() {
   }, [editedBuckets, serverBuckets, livePreview]);
 
   // === Handlers for live config (update local edited state → instant preview recompute) ===
+  // Brief 4 (po-brief-4-hierarchy-v2): added cycle prevention + within-parent reorder + parent update for multi-level.
+  // v1 flat compat preserved (all under null parent behave exactly as before).
   const updateLocalPercent = (id: string, newPct: number) => {
     setEditedBuckets((prev) => prev.map((b) => (b.id === id ? { ...b, percent: Math.max(0, Math.min(100, Math.round(newPct * 10) / 10)) } : b)));
   };
 
+  // Helpers for Brief 4 multi-level (used by picker, reorder, indent, goal flows). No new files.
+  const getAllDescendants = (id: string, buckets: BucketLike[]): string[] => {
+    const direct = buckets.filter((bb) => bb.parentId === id).map((bb) => bb.id);
+    return direct.concat(direct.flatMap((d) => getAllDescendants(d, buckets)));
+  };
+
+  const wouldCreateCycle = (potentialParentId: string | null, bucketId: string, buckets: BucketLike[]): boolean => {
+    if (!potentialParentId) return false;
+    if (potentialParentId === bucketId) return true;
+    let curr: string | null = potentialParentId;
+    const seen = new Set<string>();
+    while (curr) {
+      if (seen.has(curr)) return true;
+      if (curr === bucketId) return true;
+      seen.add(curr);
+      const p = buckets.find((bb) => bb.id === curr);
+      curr = p ? (p.parentId || null) : null;
+    }
+    return false;
+  };
+
+  const getSubtreeBucketIds = (rootId: string, buckets: BucketLike[]): string[] => {
+    const directKids = buckets.filter((bb) => bb.parentId === rootId).map((bb) => bb.id);
+    return [rootId, ...directKids, ...directKids.flatMap((k) => getSubtreeBucketIds(k, buckets))];
+  };
+
   const updateLocalOrder = (id: string, direction: -1 | 1) => {
     setEditedBuckets((prev) => {
-      const arr = [...prev];
-      const idx = arr.findIndex((b) => b.id === id);
-      if (idx < 0) return prev;
-      // swap order values with a neighbor in the desired visual direction
-      const targetIdx = direction < 0 ? idx - 1 : idx + 1;
-      if (targetIdx < 0 || targetIdx >= arr.length) return prev;
-      const tempOrder = arr[idx]!.order;
-      arr[idx]!.order = arr[targetIdx]!.order;
-      arr[targetIdx]!.order = tempOrder;
-      arr.sort((a, b) => a.order - b.order); // re-sort for UI
-      return arr;
+      if (prev.length === 0) return prev;
+      const b = prev.find((bb) => bb.id === id);
+      if (!b) return prev;
+      const parentId = b.parentId || null;
+      // Brief 4: reorder strictly within same parent siblings (by spillOverOrder). v1 flat (parentId=null) unchanged.
+      const siblings = prev.filter((bb) => (bb.parentId || null) === parentId).sort((x, y) => x.order - y.order);
+      const sidx = siblings.findIndex((s) => s.id === id);
+      const tidx = sidx + direction;
+      if (tidx < 0 || tidx >= siblings.length) return prev;
+      const target = siblings[tidx];
+      const newArr = prev.map((bb) => {
+        if (bb.id === id) return { ...bb, order: target.order };
+        if (bb.id === target.id) return { ...bb, order: b.order };
+        return bb;
+      });
+      newArr.sort((a, c) => a.order - c.order);
+      return newArr;
     });
+  };
+
+  const updateLocalParent = (id: string, newParentId: string | null) => {
+    const src = editedBuckets.length ? editedBuckets : serverBuckets;
+    if (wouldCreateCycle(newParentId, id, src)) {
+      antdMessage.error('Cannot set parent: would create a cycle (a bucket cannot be its own ancestor or create a loop).');
+      return;
+    }
+    setEditedBuckets((prev) => prev.map((bb) => (bb.id === id ? { ...bb, parentId: newParentId } : bb)));
   };
 
   const resetToServer = () => {
@@ -301,7 +351,9 @@ function App() {
   };
 
   // === Render helpers (antd + Tailwind layout only) ===
-  const renderBucketEditor = (b: BucketLike, indent = 0) => {
+  // Brief 4 updates: parent picker (cycle-safe), depth indent, 'funded via parent' indicators in editor, new @e-refs (config-parent-picker-*, config-row-nested-*).
+  // renderBucketEditor now accepts depth + optional parentDisplayName (from recursive caller). All original data-e-refs + logic preserved for v1 compat.
+  const renderBucketEditor = (b: BucketLike, indent = 0, parentDisplayName: string | null = null) => {
     const alloc = livePreview.allocations.find((a) => a.bucketId === b.id);
     const projected = livePreview.projectedBalances[b.id] ?? b.currentBalance;
     const maxForProgress = b.maxAmount || Math.max(projected * 1.3, 1000);
@@ -309,18 +361,39 @@ function App() {
 
     const linkedNames = b.linkedGoalIds.map((gid) => goals.find((g: any) => g.id === gid)?.name).filter(Boolean);
 
+    const srcForOptions = editedBuckets.length ? editedBuckets : serverBuckets;
+    const desc = getAllDescendants(b.id, srcForOptions);
+    const parentOptions = [
+      { label: '— Root (top level)', value: '' as any },
+      ...srcForOptions
+        .filter((bb) => bb.id !== b.id && !desc.includes(bb.id))
+        .map((bb) => ({ label: bb.name, value: bb.id })),
+    ];
+
     return (
       <div key={b.id} style={{ marginLeft: indent * 16, marginBottom: 12 }} data-e-ref={`bucket-row-${b.id}`}>
         <Card size="small" style={{ background: '#18181b', borderColor: '#27272a' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-            {/* Hierarchy indicator + name (tree_node style via indent + order controls) */}
-            <div style={{ minWidth: 160 }}>
+            {/* Hierarchy indicator + name (tree_node style via indent + order controls) + Brief 4 depth */}
+            <div style={{ minWidth: 160 }} data-e-ref={`config-row-nested-${b.id}`}>
               <Typography.Text strong style={{ color: '#e4e4e7' }}>
                 {b.name}
               </Typography.Text>
               <div style={{ fontSize: 11, color: '#71717a' }}>
-                order:{b.order} {b.parentId ? '↳ child' : 'root'}
+                order:{b.order} {parentDisplayName ? `↳ under ${parentDisplayName}` : 'root'}
               </div>
+            </div>
+
+            {/* Brief 4: parent picker per bucket (Select from non-descendants; onChange calls cycle-checked update). */}
+            <div style={{ minWidth: 150 }} data-e-ref={`config-parent-picker-${b.id}`}>
+              <Select
+                size="small"
+                value={b.parentId || ''}
+                onChange={(val: string) => updateLocalParent(b.id, val || null)}
+                placeholder="Parent"
+                style={{ width: 140 }}
+                options={parentOptions}
+              />
             </div>
 
             {/* % Slider + InputNumber (live edit, primary for config per task + muse-eyes) */}
@@ -400,10 +473,20 @@ function App() {
   };
 
   // Goal cards (muse-eyes: "goal thumbnails (profile_pic + cards with price, ratings, "Save for This")" → Avatar + Card + price)
+  // Brief 4: totalSavedForGoal now sums subtree (linked bucket + descendants) so goal contributions flow through hierarchy levels. Added goal-via-parent-* ref when subs present.
   const renderGoalCard = (g: any) => {
-    const linkedBuckets = editedBuckets.filter((b) => b.linkedGoalIds.includes(g.id));
-    const totalSavedForGoal = linkedBuckets.reduce((s, b) => s + (livePreview.projectedBalances[b.id] ?? b.currentBalance), 0);
+    const srcForGoals = editedBuckets.length ? editedBuckets : serverBuckets;
+    const linkedDirect = srcForGoals.filter((bb) => bb.linkedGoalIds.includes(g.id));
+    const allSubtree = new Set<string>();
+    linkedDirect.forEach((lb) => {
+      getSubtreeBucketIds(lb.id, srcForGoals).forEach((sid) => allSubtree.add(sid));
+    });
+    const totalSavedForGoal = Array.from(allSubtree).reduce((s, sid) => {
+      const bb = srcForGoals.find((x) => x.id === sid);
+      return s + (livePreview.projectedBalances[sid] ?? (bb?.currentBalance || 0));
+    }, 0);
     const progressToGoal = Math.min(100, (totalSavedForGoal / g.targetAmount) * 100);
+    const hasSubtreeFlow = linkedDirect.some((lb) => srcForGoals.some((bb) => bb.parentId === lb.id));
     return (
       <Card key={g.id} size="small" style={{ background: '#18181b', border: '1px solid #27272a', width: 220 }} data-e-ref={`goal-card-${g.id}`}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -418,13 +501,36 @@ function App() {
           <div style={{ fontSize: 11, color: '#52c41a' }}>${totalSavedForGoal.toFixed(0)} saved across linked buckets</div>
         </div>
         <div style={{ marginTop: 6, fontSize: 11, color: '#71717a' }}>{g.description}</div>
-        {linkedBuckets.length > 0 && (
+        {linkedDirect.length > 0 && (
           <Tag color="blue" style={{ marginTop: 4 }}>
-            Linked to {linkedBuckets.length} bucket(s)
+            Linked to {linkedDirect.length} bucket(s)
+          </Tag>
+        )}
+        {hasSubtreeFlow && (
+          <Tag color="geekblue" style={{ marginTop: 4 }} data-e-ref={`goal-via-parent-${g.id}`}>
+            goal contributions flow through levels
           </Tag>
         )}
       </Card>
     );
+  };
+
+  // Brief 4: recursive config editor renderer (arbitrary depth, indent by level, siblings grouped under parent).
+  // Calls renderBucketEditor (which now renders the parent picker). Uses display:contents to preserve visual without extra wrappers.
+  const renderConfigEditorTree = (parentId: string | null = null, depth: number = 0) => {
+    const src = editedBuckets.length ? editedBuckets : serverBuckets;
+    const siblings = src
+      .filter((bb) => (bb.parentId || null) === (parentId || null))
+      .sort((a, b) => a.order - b.order);
+    return siblings.map((b) => {
+      const pName = parentId ? src.find((s) => s.id === parentId)?.name || null : null;
+      return (
+        <div key={b.id} style={{ display: 'contents' }}>
+          {renderBucketEditor(b, depth, pName)}
+          {renderConfigEditorTree(b.id, depth + 1)}
+        </div>
+      );
+    });
   };
 
   return (
@@ -439,7 +545,7 @@ function App() {
               </Typography.Title>
               <Typography.Text type="secondary">Vite + React + Apollo Client → Shared Hono + Apollo Backend (Ant Design) • Blue theme</Typography.Text>
             </div>
-            <div style={{ fontSize: 12, padding: '4px 12px', background: '#18181b', border: '1px solid #27272a', borderRadius: 999 }}>Staff UI (Vite + antd) — epic-4 buckets</div>
+            <div style={{ fontSize: 12, padding: '4px 12px', background: '#18181b', border: '1px solid #27272a', borderRadius: 999 }}>Staff UI (Vite + antd) — epic-4 + Brief 4 hierarchy v2</div>
           </div>
 
           {/* Server hello (kept pattern) */}
@@ -519,12 +625,10 @@ function App() {
                   Bucket Configuration (live % + SpillOverOrder)
                 </Typography.Title>
                 {editedBuckets.length === 0 && !loading && <Typography.Text type="secondary">No buckets (check backend seed).</Typography.Text>}
-                {editedBuckets
-                  .sort((a, b) => a.order - b.order)
-                  .map((b) => {
-                    const indent = b.parentId ? 1 : 0; // simple 1-level indent for hierarchy (deeper would recurse)
-                    return renderBucketEditor(b, indent);
-                  })}
+                {/* Brief 4: now uses recursive editor tree for 2+ level parent config (picker, cycle prevent, within-parent reorder, depth indent). */}
+                <div data-e-ref="multi-level-config-editor">
+                  {renderConfigEditorTree()}
+                </div>
 
                 {/* Total validation callout */}
                 {!isPercentValid && (
@@ -563,12 +667,17 @@ function App() {
                       const b = (editedBuckets.length ? editedBuckets : serverBuckets).find((bb) => bb.id === alloc.bucketId);
                       const proj = livePreview.projectedBalances[alloc.bucketId] ?? (b?.currentBalance || 0);
                       return (
-                        <List.Item key={alloc.bucketId} style={{ padding: '4px 0' }}>
+                        <List.Item key={alloc.bucketId} style={{ padding: '4px 0' }} data-e-ref={`live-preview-nested-${alloc.bucketId}`}>
                           <div style={{ width: '100%' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
                               <span>
                                 {b?.parentId ? '↳ ' : ''}
                                 {alloc.bucketName}
+                                {b?.parentId && (
+                                  <Tag color="purple" style={{ marginLeft: 4, fontSize: 10 }} data-e-ref={`hierarchy-funding-live-${alloc.bucketId}`}>
+                                    via parent
+                                  </Tag>
+                                )}
                               </span>
                               <span style={{ fontFamily: 'monospace', color: '#52c41a' }}>+${alloc.allocated.toFixed(2)}</span>
                             </div>
