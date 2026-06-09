@@ -1,5 +1,5 @@
 {
-  "extends": "@repo/config-typescript/tsconfig.node.json",
+  "extends": "@repo/config-typescript/node",
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "dist",

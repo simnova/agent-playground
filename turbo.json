@@ -11,6 +11,10 @@
       "dependsOn": ["^check-types", "//#codegen"],
       "outputs": ["dist/tsconfig.tsbuildinfo", "**/*.tsbuildinfo"]
     },
+    "test": {
+      "dependsOn": ["^check-types"],
+      "cache": true
+    },
     "//#codegen": {
       "dependsOn": ["api#generate:schema"],
       "outputs": ["apps/*/src/gql/**", "apps/api/src/graphql/resolvers.types.ts", "apps/api/schema.graphql"],

@@ -15,6 +15,7 @@
     "knip": "knip",
     "e18e": "e18e-cli",
     "check-types": "turbo run check-types",
+    "test": "turbo run test",
     "codegen": "pnpm --filter api generate:schema && graphql-codegen --config codegen.ts",
     "proxy": "portless proxy start",
     "proxy:stop": "portless proxy stop",
