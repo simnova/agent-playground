@@ -638,3 +638,14 @@ This post-Brief-6 completion + full BankBuckets cycle agent-evaluator checkpoint
 
 (End of post-Brief-6 + cycle evaluator report. Prior reports preserved below for trend baseline.)
 
+
+## Post-cycle Guardian Run Data Point (from harness notification on bg task 019eaa5c-ff77-7172-9cb4-a594fdb2bed6)
+- Command: PUBLIC_ONLY=1 pnpm dev:agent (launched by bv sub 019eaa5c-6a79-... during its 250s verification).
+- Lifetime: 300.02s (full 5 minutes) before harness SIGTERM (exit 143). 5x the typical ~60s bg task kill baseline documented in AGENTS.md / browser-verifier persona.
+- Health polling (from final /tmp/agent-dev-guard/health.json): 30 checks, 0 restarts, api+public both "healthy-gql"/"healthy" to the end, mode "public-epic5".
+- Script behavior: SIGTERM handler fired, wrote final health.json, logged advice for pkill/hygiene+curl fallback (as designed). Multiple child vite restarts visible in logs (guardian's restart loop kept the PUBLIC pair alive across kills).
+- Used by: The just-completed browser-verifier (public/Epic-5 + Brief 6) for its sustained window — it reached SUSTAINED (3+ polls), performed agent-browser open/snapshot-i/hygiene/GQL evidence capture + new bv-public-epic5-brief6.png during this run.
+- Implication for evaluator metrics: Guardian hardening (Brief 6) delivered measurable resilience win (300s vs ~60s, 30 checks, 0 restarts/fallbacks in this instance). Directly supports "Public browser @e coverage" metric and reduces immediate hygiene fallback pressure. This 300s/30-check data point should be auto-captured in future analyze-agent-logs / evaluator runs (per the new proposal in the checkpoint above).
+- Harness reality still in force: even with hardening, eventual kill happened at 300s; protocol (monitor + health.json + 2-err hygiene) remains essential. No doom loop.
+
+(Added as periodic artifact after harness notification for the exact guardian bg task used by the bv sub. Committed alongside the cycle close.)
