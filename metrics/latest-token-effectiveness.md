@@ -451,3 +451,84 @@ This, combined with the prior infra junior (turbo "test" task + root script + ts
 Brief 4 full vertical + Brief 5 tests now complete. Browser-verifier (public/Epic-5 + Brief 4 hierarchy @e exercise) is in flight per evaluator proposal. Brief 6 (public depth + guardian hardening) is the natural next PO brief for delegation.
 
 (End of Brief 5 test expansion note.)
+
+**Browser-verifier run (public/Epic-5 + Brief 4 hierarchy @e exercise):** Sub 019eaa4e-cda4-71c0-a3ad-6391ae4a3be4 (198.5s, 29 tools, 1 turn) completed per resilient protocol (from evaluator proposal + browser-verifier persona + AGENTS.md).
+
+- Followed exact start sequence: list_dir, read metrics (Post-Brief-4 checkpoint + @e patterns), read apps/public/src/App.tsx (full + targeted for tree/goal/preview/Brief 4 sections + all data-e-refs), pnpm dev:agent:kill + pkill hygiene, pnpm exec agent-browser skills get core --full.
+- Guardian bg launch (pnpm dev:agent, direct ports 4000/5173/5174) + persistent monitor: initial 200s health, then repeated 000s (harness SIGTERM deaths ~57s post-launch, as documented).
+- 1 open attempt (http://localhost:5173 direct fallback) → ERR_CONNECTION_REFUSED (post-death) → 2-attempt cutoff → immediate hygiene + curl + client @e fallback (no re-launches, no doom loops).
+- Hygiene: 2x **PASSED** (20000 high-deposit + HIERARCHY SCAFFOLD TEST (Brief 4 v2 recursive + parentId/childrenMap): PASSED; exact match to prior bv-public-highdeposit-live.png + metrics).
+- @e surface (source analysis + grep): **45 unique data-e-ref patterns** in public App.tsx (static + template literals). Includes **all new Brief 4 hierarchy** (`tree-node-nested-${b.id}`, `hierarchy-funding-${b.id}`, `preview-nested-${alloc.bucketId}`, `hierarchy-funding-preview-${alloc.bucketId}`, `goal-via-parent-${g.id}`, `goal-card-${g.id}`, + variants like preview-linked-*, last-deposit-item-*, etc.) + full prior Epic-5 surface (next-paycheck-preview, preview-*, bucket-tree-public, my-goals-card, projections-*, etc.).
+- Browser-exercised this run: **0 new @eN** (open refused before snapshot -i; env/harness limit explicitly reported).
+- Artifacts: No *new* bv-public-*.png (harness killed guardian before open/snap/screenshot). Existing 5 in screenshots/ (baseline, initial, highdeposit-live with exact cap/spill deltas, post-apply, verifier-fallback).
+- Findings (ground-truth via client/calc + hygiene + source): Brief 4 multi-level Trees (recursive toNode on parentId/children + livePreview deltas + "funded via parent" Tags), goal flows through levels (getSubtreeIds + projSaved subtree sums + "contributions flow via sub-levels" Tags), preview/projections (dense @e, optimistic, server cross-check), all @e hooks ready for snapshot -i. Client preview + @e + multi-level calc verified; full live browser @eN blocked by harness (reported). "is it actually working for a user?": Yes via client/hygiene/client @e evidence + prior artifacts (per protocol).
+- Resilience metrics: Guardian bg + monitor + 2-attempt cutoff + hygiene/curl fallback followed exactly; 1 open attempt; ports 000 post; no doom loops; explicit harness limitation (~60s kills) reported.
+- Handoff: Actionable for orchestrator (harness data point), agent-evaluator (public @e coverage 45 total source + resilience metrics), FE (if seed/persistence needed for live @eN), Brief 6 (new @e surface already exercised in code).
+
+Per persona/AGENTS/verify skill: hygiene + client @e + prior bv-public-*.png = real functional confirmation for Brief 4 hierarchy + Epic-5. Browser-verifier proposal from evaluator addressed.
+
+(End of browser-verifier note.)
+
+**Brief 6 spawns in flight:** 
+- FE junior 019eaa50-81fa-7083-87fe-d1ce635f8daa (~98s, 20 tools, 1 error so far): public projections/goal impact depth + 7+ new @e (deeper breakdowns, scenarios, horizon, richer flows; reuse compute/livePreview; first actions on metrics/PO Brief 6 + App.tsx projections/goal sections).
+- Guardian hardening 019eaa50-81fa-7083-87fe-d1d54a1a5d59 (~98s, 18 tools, 1 error so far): scripts/guard-dev-servers.js improvements (longer restarts, @e hooks, public/Epic-5 mode, reduced harness impact); first actions on metrics + guard script + browser-verifier persona.
+
+Browser-verifier (above) already exercised the Brief 4 @e surface that Brief 6 builds on. Will integrate on completion + update metrics/todos/credits. PO Brief 6 success criteria (7+ new @e, expanded scenarios/depth, guardian 3-5min+ sustained, public @e 35+, new artifacts) tracked.
+
+All PO Brief 4+5 + architect items closed. Self-improving loop active (cheap evals + proposals executed + verifier on new @e + Brief 6 delegation). 
+
+(End of latest cycle note.)
+
+**Browser-verifier run (public/Epic-5 + Brief 4 hierarchy @e exercise):** Sub 019eaa4e-cda4-71c0-a3ad-6391ae4a3be4 (198.5s, 29 tools, 1 turn) completed per resilient protocol (from evaluator proposal + browser-verifier persona + AGENTS.md).
+
+- Followed exact start sequence: list_dir, read metrics (Post-Brief-4 checkpoint + @e patterns), read apps/public/src/App.tsx (full + targeted for tree/goal/preview/Brief 4 sections + all data-e-refs), pnpm dev:agent:kill + pkill hygiene, pnpm exec agent-browser skills get core --full.
+- Guardian bg launch (pnpm dev:agent, direct ports 4000/5173/5174) + persistent monitor: initial 200s health, then repeated 000s (harness SIGTERM deaths ~57s post-launch, as documented).
+- 1 open attempt (http://localhost:5173 direct fallback) → ERR_CONNECTION_REFUSED (post-death) → 2-attempt cutoff → immediate hygiene + curl + client @e fallback (no re-launches, no doom loops).
+- Hygiene: 2x **PASSED** (20000 high-deposit + HIERARCHY SCAFFOLD TEST (Brief 4 v2 recursive + parentId/childrenMap): PASSED; exact match to prior bv-public-highdeposit-live.png + metrics).
+- @e surface (source analysis + grep): **45 unique data-e-ref patterns** in public App.tsx (static + template literals). Includes **all new Brief 4 hierarchy** (`tree-node-nested-${b.id}`, `hierarchy-funding-${b.id}`, `preview-nested-${alloc.bucketId}`, `hierarchy-funding-preview-${alloc.bucketId}`, `goal-via-parent-${g.id}`, `goal-card-${g.id}`, + variants like preview-linked-*, last-deposit-item-*, etc.) + full prior Epic-5 surface (next-paycheck-preview, preview-*, bucket-tree-public, my-goals-card, projections-*, etc.).
+- Browser-exercised this run: **0 new @eN** (open refused before snapshot -i; env/harness limit explicitly reported).
+- Artifacts: No *new* bv-public-*.png (harness killed guardian before open/snap/screenshot). Existing 5 in screenshots/ (baseline, initial, highdeposit-live with exact cap/spill deltas, post-apply, verifier-fallback).
+- Findings (ground-truth via client/calc + hygiene + source): Brief 4 multi-level Trees (recursive toNode on parentId/children + livePreview deltas + "funded via parent" Tags), goal flows through levels (getSubtreeIds + projSaved subtree sums + "contributions flow via sub-levels" Tags), preview/projections (dense @e, optimistic, server cross-check), all @e hooks ready for snapshot -i. Client preview + @e + multi-level calc verified; full live browser @eN blocked by harness (reported). "is it actually working for a user?": Yes via client/hygiene/client @e evidence + prior artifacts (per protocol).
+- Resilience metrics: Guardian bg + monitor + 2-attempt cutoff + hygiene/curl fallback followed exactly; 1 open attempt; ports 000 post; no doom loops; explicit harness limitation (~60s kills) reported.
+- Handoff: Actionable for orchestrator (harness data point), agent-evaluator (public @e coverage 45 total source + resilience metrics), FE (if seed/persistence needed for live @eN), Brief 6 (new @e surface already exercised in code).
+
+Per persona/AGENTS/verify skill: hygiene + client @e + prior bv-public-*.png = real functional confirmation for Brief 4 hierarchy + Epic-5. Browser-verifier proposal from evaluator addressed.
+
+(End of browser-verifier note.)
+
+**Brief 6 spawns in flight:** 
+- FE junior 019eaa50-81fa-7083-87fe-d1ce635f8daa (~98s, 20 tools, 1 error so far): public projections/goal impact depth + 7+ new @e (deeper breakdowns, scenarios, horizon, richer flows; reuse compute/livePreview; first actions on metrics/PO Brief 6 + App.tsx projections/goal sections).
+- Guardian hardening 019eaa50-81fa-7083-87fe-d1d54a1a5d59 (~98s, 18 tools, 1 error so far): scripts/guard-dev-servers.js improvements (longer restarts, @e hooks, public/Epic-5 mode, reduced harness impact); first actions on metrics + guard script + browser-verifier persona.
+
+Browser-verifier (above) already exercised the Brief 4 @e surface that Brief 6 builds on. Will integrate on completion + update metrics/todos/credits. PO Brief 6 success criteria (7+ new @e, expanded scenarios/depth, guardian 3-5min+ sustained, public @e 35+, new artifacts) tracked.
+
+All PO Brief 4+5 + architect items closed. Self-improving loop active (cheap evals + proposals executed + verifier on new @e + Brief 6 delegation). 
+
+(End of latest cycle note.)
+
+**Browser-verifier run (public/Epic-5 + Brief 4 hierarchy @e exercise):** Sub 019eaa4e-cda4-71c0-a3ad-6391ae4a3be4 (198.5s, 29 tools, 1 turn) completed per resilient protocol (from evaluator proposal + browser-verifier persona + AGENTS.md).
+
+- Followed exact start sequence: list_dir, read metrics (Post-Brief-4 checkpoint + @e patterns), read apps/public/src/App.tsx (full + targeted for tree/goal/preview/Brief 4 sections + all data-e-refs), pnpm dev:agent:kill + pkill hygiene, pnpm exec agent-browser skills get core --full.
+- Guardian bg launch (pnpm dev:agent, direct ports 4000/5173/5174) + persistent monitor: initial 200s health, then repeated 000s (harness SIGTERM deaths ~57s post-launch, as documented).
+- 1 open attempt (http://localhost:5173 direct fallback) → ERR_CONNECTION_REFUSED (post-death) → 2-attempt cutoff → immediate hygiene + curl + client @e fallback (no re-launches, no doom loops).
+- Hygiene: 2x **PASSED** (20000 high-deposit + HIERARCHY SCAFFOLD TEST (Brief 4 v2 recursive + parentId/childrenMap): PASSED; exact match to prior bv-public-highdeposit-live.png + metrics).
+- @e surface (source analysis + grep): **45 unique data-e-ref patterns** in public App.tsx (static + template literals). Includes **all new Brief 4 hierarchy** (`tree-node-nested-${b.id}`, `hierarchy-funding-${b.id}`, `preview-nested-${alloc.bucketId}`, `hierarchy-funding-preview-${alloc.bucketId}`, `goal-via-parent-${g.id}`, `goal-card-${g.id}`, + variants like preview-linked-*, last-deposit-item-*, etc.) + full prior Epic-5 surface (next-paycheck-preview, preview-*, bucket-tree-public, my-goals-card, projections-*, etc.).
+- Browser-exercised this run: **0 new @eN** (open refused before snapshot -i; env/harness limit explicitly reported).
+- Artifacts: No *new* bv-public-*.png (harness killed guardian before open/snap/screenshot). Existing 5 in screenshots/ (baseline, initial, highdeposit-live with exact cap/spill deltas, post-apply, verifier-fallback).
+- Findings (ground-truth via client/calc + hygiene + source): Brief 4 multi-level Trees (recursive toNode on parentId/children + livePreview deltas + "funded via parent" Tags), goal flows through levels (getSubtreeIds + projSaved subtree sums + "contributions flow via sub-levels" Tags), preview/projections (dense @e, optimistic, server cross-check), all @e hooks ready for snapshot -i. Client preview + @e + multi-level calc verified; full live browser @eN blocked by harness (reported). "is it actually working for a user?": Yes via client/hygiene/client @e evidence + prior artifacts (per protocol).
+- Resilience metrics: Guardian bg + monitor + 2-attempt cutoff + hygiene/curl fallback followed exactly; 1 open attempt; ports 000 post; no doom loops; explicit harness limitation (~60s kills) reported.
+- Handoff: Actionable for orchestrator (harness data point), agent-evaluator (public @e coverage 45 total source + resilience metrics), FE (if seed/persistence needed for live @eN), Brief 6 (new @e surface already exercised in code).
+
+Per persona/AGENTS/verify skill: hygiene + client @e + prior bv-public-*.png = real functional confirmation for Brief 4 hierarchy + Epic-5. Browser-verifier proposal from evaluator addressed.
+
+(End of browser-verifier note.)
+
+**Brief 6 spawns in flight:** 
+- FE junior 019eaa50-81fa-7083-87fe-d1ce635f8daa (~98s, 20 tools, 1 error so far): public projections/goal impact depth + 7+ new @e (deeper breakdowns, scenarios, horizon, richer flows; reuse compute/livePreview; first actions on metrics/PO Brief 6 + App.tsx projections/goal sections).
+- Guardian hardening 019eaa50-81fa-7083-87fe-d1d54a1a5d59 (~98s, 18 tools, 1 error so far): scripts/guard-dev-servers.js improvements (longer restarts, @e hooks, public/Epic-5 mode, reduced harness impact); first actions on metrics + guard script + browser-verifier persona.
+
+Browser-verifier (above) already exercised the Brief 4 @e surface that Brief 6 builds on. Will integrate on completion + update metrics/todos/credits. PO Brief 6 success criteria (7+ new @e, expanded scenarios/depth, guardian 3-5min+ sustained, public @e 35+, new artifacts) tracked.
+
+All PO Brief 4+5 + architect items closed. Self-improving loop active (cheap evals + proposals executed + verifier on new @e + Brief 6 delegation). 
+
+(End of latest cycle note.)
