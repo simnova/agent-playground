@@ -21,9 +21,9 @@ Run cheap analysis on Grok's own execution logs and artifacts (unified.jsonl, pe
    - `~/.grok/logs/unified.jsonl` (timing of model calls)
    - `~/.grok/sessions/<encoded-workspace>/<session-id>/` (especially `summary.json` for model used, `signals.json` for tokens, `plan.json` for todos)
    - Subagent session directories (each has its own independent metrics — this is key for tier comparison)
-4. Compute the metrics listed in the full skill.
+4. Compute the metrics listed in the full skill. The `analyze-agent-logs.ts` script now also generates and writes a human-readable periodic summary markdown file to `metrics/token-effectiveness-YYYY-MM-DD.md` (plus `metrics/latest-token-effectiveness.md`). Commit these as part of the work being accomplished — exactly parallel to how the `browser-verifier` commits screenshots to the `screenshots/` directory.
 5. Produce a report + concrete, low-risk proposals for changes (e.g., specific new wording for a persona's instructions, adjustment to default model on a role, new rule for the orchestrator about when to force a fresh junior spawn).
-6. The (higher-tier) orchestrator reviews the output and applies changes via search_replace on the relevant `.toml` / `.md` files.
+6. The (higher-tier) orchestrator reviews the output and applies changes via search_replace on the relevant `.toml` / `.md` files. The generated metrics md files become the "shown periodically" evidence in the project README (just like screenshots).
 
 ## Recommended Metrics
 

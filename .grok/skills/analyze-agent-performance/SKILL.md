@@ -78,7 +78,7 @@ grep "inference_done" ~/.grok/logs/unified.jsonl | jq -r '.ctx.model_elapsed_ms'
    - Sample `inference_done` timing from unified.jsonl for the relevant time window.
    - Pull high-level todo state from `plan.json`.
 
-3. **Compute metrics** using the definitions above. Use scripts in `scripts/` (e.g. `analyze-agent-logs.ts`) when they exist for repeatability.
+3. **Compute metrics** using the definitions above. Use scripts in `scripts/` (e.g. `analyze-agent-logs.ts`) when they exist for repeatability. The script automatically writes a human-readable periodic summary as markdown to `metrics/token-effectiveness-YYYY-MM-DD.md` (and overwrites `metrics/latest-token-effectiveness.md`) — commit these files as part of the work being accomplished (exactly parallel to how the browser-verifier commits screenshots to `screenshots/`).
 
 4. **Analyze patterns**:
    - Where is expensive time being spent unnecessarily?

@@ -14,7 +14,7 @@
  * proposals for persona/model refinements.
  */
 
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 
@@ -171,6 +171,80 @@ inference timing, and token/turn counters from signals.json.
 
   // Emit machine-readable report
   console.log(JSON.stringify(report, null, 2));
+
+  // Generate human-readable periodic summary (committed like screenshots)
+  // This is run by agent-evaluator as part of work accomplished, producing
+  // dated + latest markdown reports in metrics/ for README inclusion.
+  try {
+    const metricsDir = 'metrics';
+    mkdirSync(metricsDir, { recursive: true });
+
+    const date = new Date().toISOString().split('T')[0];
+    const mdPath = join(metricsDir, `token-effectiveness-${date}.md`);
+    const latestPath = join(metricsDir, 'latest-token-effectiveness.md');
+
+    const mdContent = generateMarkdownReport(report, workspace);
+    writeFileSync(mdPath, mdContent);
+    writeFileSync(latestPath, mdContent);
+
+    console.error(`[analyze] Wrote periodic token effectiveness summary to ${mdPath} (and ${latestPath})`);
+  } catch (e: any) {
+    console.error('[analyze] Failed to write metrics markdown:', e?.message || e);
+  }
+}
+
+function generateMarkdownReport(report: any, workspace: string): string {
+  const lines: string[] = [];
+  lines.push(`# Token Effectiveness Summary`);
+  lines.push(`**Generated:** ${report.generatedAt}`);
+  lines.push(`**Workspace:** ${workspace}`);
+  lines.push(``);
+  lines.push(`## Summary`);
+  lines.push(`- **Distinct models seen:** ${report.summary.distinctModelsSeen?.join(', ') || 'N/A'}`);
+  lines.push(`- **Sampled inference turns:** ${report.summary.sampledInferenceTurns || 0}`);
+  lines.push(`- **Total sampled model time:** ${report.summary.totalSampledModelMs || 0} ms`);
+  lines.push(`- **Subagents analyzed:** ${report.summary.subagentCount || 0}`);
+  lines.push(``);
+
+  if (report.mainSession?.summary) {
+    lines.push(`## Main Session`);
+    lines.push(`- Model: ${report.mainSession.summary.current_model_id || 'unknown'}`);
+    lines.push(`- Messages: ${report.mainSession.summary.num_messages || 'N/A'}`);
+    lines.push(``);
+  }
+
+  if (report.subagents && report.subagents.length > 0) {
+    lines.push(`## Subagents (Tier Breakdown)`);
+    lines.push(`| Subagent ID | Model | Messages |`);
+    lines.push(`|-------------|-------|----------|`);
+    report.subagents.forEach((s: any) => {
+      const model = s.summary?.current_model_id || 'unknown';
+      const msgs = s.summary?.num_messages || 'N/A';
+      lines.push(`| ${s.id} | ${model} | ${msgs} |`);
+    });
+    lines.push(``);
+  }
+
+  if (report.unifiedTimingSample && report.unifiedTimingSample.length > 0) {
+    lines.push(`## Recent Inference Timing (model_elapsed_ms samples)`);
+    lines.push(`(Lower times = cheaper/faster models doing the work)`);
+    const samples = report.unifiedTimingSample.slice(-10);
+    lines.push(`| Timestamp | Model Time (ms) |`);
+    lines.push(`|-----------|-----------------|`);
+    samples.forEach((s: any) => {
+      lines.push(`| ${s.ts} | ${s.modelElapsedMs} |`);
+    });
+    lines.push(``);
+  }
+
+  lines.push(`## Interpretation (for self-improvement)`);
+  lines.push(`- High volume of low-ms turns on deepseek-4-fast indicates successful use of juniors.`);
+  lines.push(`- Descaling after grok-4-* work should show subsequent cheap subagents handling follow-ups.`);
+  lines.push(`- Run this periodically via agent-evaluator to track shifts in tier utilization and cost per value.`);
+  lines.push(``);
+  lines.push(`*This report is generated as part of the work being accomplished and committed for visibility (parallel to screenshots).*`);
+
+  return lines.join('\n');
 }
 
 main();
