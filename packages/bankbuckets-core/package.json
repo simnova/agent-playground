@@ -1,0 +1,19 @@
+{
+  "name": "@repo/bankbuckets-core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "biome check .",
+    "check-types": "tsgo --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@repo/config-typescript": "workspace:*",
+    "@types/node": "^22.15.3",
+    "vitest": "^1.6.0"
+  }
+}

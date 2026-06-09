@@ -112,3 +112,6 @@ See full analysis... (above). This checkpoint closes the public Epic-5 self-impr
 - **agent-evaluator (self, this run)**: Fresh cheap checkpoint post-public (direct log parse + sub reads + screenshot @e + hygiene equiv + script equiv). Updated metrics/*.md (latest + dated), credits public front-end sub + team, proposed 1-2 refinements, committed artifacts. Low cost.
 
 Prior reports (generic) preserved below for trend baseline.
+
+## Note: Fresh Cheap Baseline Checkpoint Started (75min BankBuckets Analysis Test)
+Baseline established 2026-06-08 (post this historical 2026-06-09 cycle close). See /Volumes/files/src/agentPlayground/metrics/latest-token-effectiveness.md (new appended section) for full scope, dev:agent guardian status (ports 200 live, script details), public/staff code state snapshot, tier expectations, and the 2 measurable goals (descaling success; public @e coverage + hygiene). This dated file left as historical snapshot; latest carries forward the self-improvement tracking. No other changes.

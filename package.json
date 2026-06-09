@@ -5,6 +5,8 @@
     "build": "turbo run build",
     "dev": "turbo run //#proxy dev --parallel",
     "dev:direct": "PORTLESS=0 turbo run dev --filter=staff,public,api",
+    "dev:agent": "PORTLESS=0 node scripts/guard-dev-servers.js",
+    "dev:agent:kill": "pkill -f 'bun --hot|vite' || true; pkill -f 'guard-dev-servers' || true",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",

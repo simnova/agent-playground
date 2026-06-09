@@ -2,7 +2,7 @@ import { GraphQLError } from 'graphql';
 import mongoose from 'mongoose';
 import { AgentMetric } from './agent-metrics.js';
 import { Bucket, Deposit, Goal, type IAllocationResult } from './budget-models.js';
-import { type BucketState, calculateDepositAllocation } from './deposit-calculator.js';
+import { type BucketState, calculateDepositAllocation } from '@repo/bankbuckets-core';
 import type { Resolvers } from './resolvers.types.js';
 
 // Helper: convert Mongoose bucket doc (after toObject or lean) to portable calc input shape.
@@ -137,7 +137,7 @@ export const resolvers: Resolvers = {
           maxAmount: cfg.maxAmount ?? null,
           spillOverOrder: cfg.spillOverOrder ?? 100,
           spillOverBucketUsed: cfg.spillOverBucketUsed ? new mongoose.Types.ObjectId(cfg.spillOverBucketUsed) : null,
-          parent: null, // v1: create flat; parentId accepted for future wiring (model supports refs + children resolver)
+          parent: cfg.parentId ? new mongoose.Types.ObjectId(cfg.parentId) : null, // Brief 1/2: parentId now wired (was hardcoded null); supports model + children/parent resolvers + docToBucketState + UI parentId in configs. (Full remap on delete+recreate for stable cross-config hierarchy refs is future; names/order stable in v1.)
           balance: 0,
           goal: cfg.goalId ? new mongoose.Types.ObjectId(cfg.goalId) : null,
         });
@@ -159,18 +159,24 @@ export const resolvers: Resolvers = {
     },
 
     linkGoal: async (_parent, { bucketId, goalId }) => {
-      const bucket = await Bucket.findById(bucketId);
-      if (!bucket) {
-        throw new GraphQLError('Bucket not found', { extensions: { code: 'NOT_FOUND' } });
+      // Brief 1: robust linkGoal (was basic find+mutate+save)
+      if (!mongoose.Types.ObjectId.isValid(bucketId) || !mongoose.Types.ObjectId.isValid(goalId)) {
+        throw new GraphQLError('Invalid bucketId or goalId', { extensions: { code: 'BAD_USER_INPUT' } });
       }
-      // Validate goal exists (optional but good)
+      // Validate goal exists upfront
       const goal = await Goal.findById(goalId);
       if (!goal) {
         throw new GraphQLError('Goal not found', { extensions: { code: 'NOT_FOUND' } });
       }
-      bucket.goal = new mongoose.Types.ObjectId(goalId);
-      await bucket.save();
-      return toGql(bucket) as any;
+      const updated = await Bucket.findByIdAndUpdate(
+        bucketId,
+        { goal: new mongoose.Types.ObjectId(goalId) },
+        { new: true }
+      );
+      if (!updated) {
+        throw new GraphQLError('Bucket not found', { extensions: { code: 'NOT_FOUND' } });
+      }
+      return toGql(updated) as any;
     },
 
     simulateDeposit: async (_parent, { amount }) => {

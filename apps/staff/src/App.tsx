@@ -3,6 +3,7 @@ import { Avatar, message as antdMessage, Button, Card, Divider, InputNumber, Lis
 // TreeDataNode not directly needed (we use any[] for treeData to avoid exactOptional/children TS strict issues with antd Tree)
 import { useEffect, useMemo, useState } from 'react';
 import { gql } from './gql/gql';
+import { type BucketLike, computeLiveAllocations } from '@repo/bankbuckets-core';
 
 const GET_MESSAGES = gql(`
   query GetMessages {
@@ -98,82 +99,6 @@ const APPLY_DEPOSIT = gql(`
     }
   }
 `);
-
-// === Portable client-side simulation (matches backend calculateDepositAllocations for live preview) ===
-// Incorporates muse-eyes: % prominent, spillover badges, progress vs max/goal, precise remainders/caps.
-// Use for instant UI feedback on sliders/deposit amount (no server roundtrip until Apply).
-interface BucketLike {
-  id: string;
-  name: string;
-  percent: number;
-  maxAmount: number | null;
-  currentBalance: number;
-  order: number;
-  parentId: string | null;
-  linkedGoalIds: string[];
-}
-
-function computeLiveAllocations(
-  amount: number,
-  buckets: BucketLike[]
-): {
-  allocations: Array<{ bucketId: string; bucketName: string; allocated: number; capped: boolean; spilled: number }>;
-  projectedBalances: Record<string, number>;
-  totalAllocated: number;
-  remaining: number;
-} {
-  if (amount <= 0 || buckets.length === 0) {
-    return { allocations: [], projectedBalances: {}, totalAllocated: 0, remaining: amount };
-  }
-  const totalPct = buckets.reduce((s, b) => s + (b.percent || 0), 0);
-  const scale = totalPct > 0 ? 100 / totalPct : 1;
-
-  const projected: Record<string, number> = {};
-  buckets.forEach((b) => {
-    projected[b.id] = b.currentBalance;
-  });
-
-  // order by spillover priority
-  const ordered = [...buckets].sort((a, b) => a.order - b.order);
-
-  const allocs: Array<{ bucketId: string; bucketName: string; allocated: number; capped: boolean; spilled: number }> = [];
-  let spillPool = 0;
-
-  for (const b of ordered) {
-    const intended = (amount * (b.percent || 0) * scale) / 100;
-    const startBal = projected[b.id] ?? b.currentBalance;
-    const capLeft = b.maxAmount != null ? Math.max(0, b.maxAmount - startBal) : Infinity;
-    const allocated = Math.min(intended, capLeft);
-    const capped = allocated < intended - 1e-6;
-    const thisSpill = intended - allocated;
-    spillPool += thisSpill;
-    projected[b.id] = startBal + allocated;
-    allocs.push({ bucketId: b.id, bucketName: b.name, allocated, capped, spilled: thisSpill });
-  }
-
-  // waterfall spill to room (respecting order)
-  if (spillPool > 0) {
-    const roomOrdered = ordered.filter((b) => b.maxAmount == null || (projected[b.id] ?? b.currentBalance) < (b.maxAmount || Infinity));
-    for (const b of roomOrdered) {
-      if (spillPool <= 0) break;
-      const startBal = projected[b.id] ?? b.currentBalance;
-      const capLeft = b.maxAmount != null ? Math.max(0, b.maxAmount - startBal) : Infinity;
-      const give = Math.min(spillPool, capLeft);
-      if (give > 0) {
-        projected[b.id] = startBal + give;
-        spillPool -= give;
-        const res = allocs.find((a) => a.bucketId === b.id);
-        if (res) {
-          res.allocated += give;
-          res.spilled = Math.max(0, res.spilled - give);
-        }
-      }
-    }
-  }
-
-  const totalAllocated = allocs.reduce((s, a) => s + a.allocated, 0);
-  return { allocations: allocs, projectedBalances: projected, totalAllocated, remaining: Math.max(0, amount - totalAllocated) };
-}
 
 function App() {
   // Original messages query (kept for continuity / demo pattern reuse)

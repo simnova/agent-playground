@@ -2,6 +2,7 @@ import { useMutation, useQuery } from '@apollo/client';
 import { Avatar, message as antdMessage, Button, Card, InputNumber, List, Modal, Progress, Slider, Space, Statistic, Tag, Tree, Typography } from 'antd';
 import { useMemo, useState } from 'react';
 import { gql } from './gql/gql';
+import { type BucketLike, computeLiveAllocations } from '@repo/bankbuckets-core';
 
 // === Reused GQL contracts from staff patterns (currentState + simulate/apply + projections) ===
 // Exact match to schema + staff implementation. Projections for "N paychecks" teaser per handoff note.
@@ -101,79 +102,14 @@ const GET_PROJECTIONS = gql(`
   }
 `);
 
-// === Portable client-side simulation (exact copy/adapt of staff's computeLiveAllocations for reuse + instant magic) ===
-// Matches backend calculateDepositAllocation. Enables live preview without server roundtrip until Simulate/Apply.
-// Per ux wireframes + staff: % Tags, small Progress green, spill/capped, narrative "cap in ~N deposits".
-interface BucketLike {
-  id: string;
-  name: string;
-  percent: number;
-  maxAmount: number | null;
-  currentBalance: number;
-  order: number;
-  parentId: string | null;
-  linkedGoalIds: string[];
-}
-
-function computeLiveAllocations(
-  amount: number,
-  buckets: BucketLike[]
-): {
-  allocations: Array<{ bucketId: string; bucketName: string; allocated: number; capped: boolean; spilled: number }>;
-  projectedBalances: Record<string, number>;
-  totalAllocated: number;
-  remaining: number;
-} {
-  if (amount <= 0 || buckets.length === 0) {
-    return { allocations: [], projectedBalances: {}, totalAllocated: 0, remaining: amount };
-  }
-  const totalPct = buckets.reduce((s, b) => s + (b.percent || 0), 0);
-  const scale = totalPct > 0 ? 100 / totalPct : 1;
-
-  const projected: Record<string, number> = {};
-  buckets.forEach((b) => {
-    projected[b.id] = b.currentBalance;
-  });
-
-  const ordered = [...buckets].sort((a, b) => a.order - b.order);
-
-  const allocs: Array<{ bucketId: string; bucketName: string; allocated: number; capped: boolean; spilled: number }> = [];
-  let spillPool = 0;
-
-  for (const b of ordered) {
-    const intended = (amount * (b.percent || 0) * scale) / 100;
-    const startBal = projected[b.id] ?? b.currentBalance;
-    const capLeft = b.maxAmount != null ? Math.max(0, b.maxAmount - startBal) : Infinity;
-    const allocated = Math.min(intended, capLeft);
-    const capped = allocated < intended - 1e-6;
-    const thisSpill = intended - allocated;
-    spillPool += thisSpill;
-    projected[b.id] = startBal + allocated;
-    allocs.push({ bucketId: b.id, bucketName: b.name, allocated, capped, spilled: thisSpill });
-  }
-
-  if (spillPool > 0) {
-    const roomOrdered = ordered.filter((b) => b.maxAmount == null || (projected[b.id] ?? b.currentBalance) < (b.maxAmount || Infinity));
-    for (const b of roomOrdered) {
-      if (spillPool <= 0) break;
-      const startBal = projected[b.id] ?? b.currentBalance;
-      const capLeft = b.maxAmount != null ? Math.max(0, b.maxAmount - startBal) : Infinity;
-      const give = Math.min(spillPool, capLeft);
-      if (give > 0) {
-        projected[b.id] = startBal + give;
-        spillPool -= give;
-        const res = allocs.find((a) => a.bucketId === b.id);
-        if (res) {
-          res.allocated += give;
-          res.spilled = Math.max(0, res.spilled - give);
-        }
-      }
+const LINK_GOAL = gql(`
+  mutation LinkGoal($bucketId: ID!, $goalId: ID!) {
+    linkGoal(bucketId: $bucketId, goalId: $goalId) {
+      id
+      goal { id name targetAmount description }
     }
   }
-
-  const totalAllocated = allocs.reduce((s, a) => s + a.allocated, 0);
-  return { allocations: allocs, projectedBalances: projected, totalAllocated, remaining: Math.max(0, amount - totalAllocated) };
-}
+`);
 
 // === Client-side multi-period projections for long-term outlook (Epic-5) ===
 // Reuses the exact computeLiveAllocations (deposit-calculator logic adapted for public) iteratively.
@@ -211,20 +147,30 @@ type LongTermScenarioOutlook = {
 };
 
 const longTermScenarios = [
+  { key: 'minimal', label: 'Minimal', amount: 100, hint: 'Starter consistent steps' },
   { key: 'conservative', label: 'Conservative', amount: 250, hint: 'Small consistent steps' },
   { key: 'typical', label: 'Typical', amount: 750, hint: 'Matches common preview' },
   { key: 'ambitious', label: 'Ambitious', amount: 2000, hint: 'Accelerated outlook' },
+  { key: 'aggressive', label: 'Aggressive', amount: 3000, hint: 'Fast-track growth' },
 ] as const;
 
 function App() {
   // Primary data: currentState (buckets w/ hierarchy + goal links, goals list, totals). Reused contract.
   const { data, loading, error, refetch } = useQuery(GET_CURRENT_STATE);
 
-  const [applyDeposit, { loading: applying }] = useMutation(APPLY_DEPOSIT, {
+  const [applyDeposit, { loading: applying, error: applyMutationError }] = useMutation(APPLY_DEPOSIT, {
     onCompleted: (res) => {
-      refetch();
       const r = res.applyDeposit;
-      antdMessage.success(`Deposit applied! Your buckets grew by $${r.totalAllocated.toFixed(0)} (remainder $${r.remainder.toFixed(0)}). Set it and forget it.`);
+      setJustApplied(r);
+      setRecentSuccess(r);
+      setApplyErrMsg(null);
+      refetch();
+      // richer success (beyond basic msg): recentSuccess drives post-apply detail card + last panel update
+      antdMessage.success(`Deposit applied! Your buckets grew by $${r.totalAllocated.toFixed(0)} (remainder $${r.remainder.toFixed(0)}). See full lastDeposit allocations below.`);
+    },
+    onError: (e: any) => {
+      setApplyErrMsg(e.message || 'Apply failed');
+      antdMessage.error(`Apply failed: ${e.message}`);
     },
   });
 
@@ -236,10 +182,42 @@ function App() {
     },
   });
 
-  // Local UI state (deposit drives live client preview + projections teaser)
+  // linkGoal mutation: wires public modal for persistence (Brief 1). local update + onCompleted refetch + Apollo optimisticResponse + cache update (reuses apply/simulate refetch pattern + staff linkedGoalIds shape).
+  const [linkGoal, { loading: linking }] = useMutation(LINK_GOAL, {
+    onCompleted: () => {
+      refetch();
+    },
+    onError: (e: any) => {
+      antdMessage.error(`linkGoal failed: ${e.message}`);
+    },
+    update: (cache, { data }) => {
+      const updatedBucket = data?.linkGoal;
+      if (!updatedBucket) return;
+      try {
+        const existing: any = cache.readQuery({ query: GET_CURRENT_STATE });
+        if (!existing?.currentState?.buckets) return;
+        const newBuckets = existing.currentState.buckets.map((b: any) => (b.id === updatedBucket.id ? { ...b, goal: updatedBucket.goal || null } : b));
+        cache.writeQuery({
+          query: GET_CURRENT_STATE,
+          data: {
+            ...existing,
+            currentState: { ...existing.currentState, buckets: newBuckets },
+          },
+        });
+      } catch {
+        // cache miss ok; refetch will reconcile
+      }
+    },
+  });
+
+  // Local UI state (deposit drives live client preview + full projections + apply visibility)
   const [depositAmount, setDepositAmount] = useState<number>(750); // realistic "next paycheck" default
   const [lastSim, setLastSim] = useState<any>(null);
   const [projCount, setProjCount] = useState<number>(6);
+  // For optimistic effects (during apply) + richer post-apply success + last visibility
+  const [justApplied, setJustApplied] = useState<any>(null);
+  const [recentSuccess, setRecentSuccess] = useState<any>(null);
+  const [applyErrMsg, setApplyErrMsg] = useState<string | null>(null);
 
   // Projections query (reused for N-paycheck teaser; updates with depositAmount)
   const { data: projData, loading: projLoading } = useQuery(GET_PROJECTIONS, {
@@ -247,7 +225,7 @@ function App() {
     skip: depositAmount <= 0,
   });
 
-  // Link modal state (client-optimistic for public motivational feel; no server side-effect in this slice to keep shared seed stable)
+  // Link modal state (local update layer + real linkGoal + Apollo optimistic for instant persistence; linked state now surfaces in grid/tree/preview/projections via serverBuckets)
   const [linkModalOpen, setLinkModalOpen] = useState(false);
   const [selectedGoalForLink, setSelectedGoalForLink] = useState<any>(null);
   const [localLinks, setLocalLinks] = useState<Record<string, string[]>>({});
@@ -344,6 +322,11 @@ function App() {
     );
   }, [serverBuckets, currentTotalBalance]);
 
+  // Derived for Brief 3 full projections (lastDeposit cmp + goal impact) + apply visibility (last details/allocs in preview/post-apply)
+  // lastDeposit from currentState GQL (reused); justApplied for instant post-apply (before refetch lands); optimistic live allocs during applying
+  const lastDeposit = data?.currentState?.lastDeposit || justApplied;
+  const optimisticAllocForApply = applying ? livePreview : null;
+
   // Quick chips per ux wireframes
   const quickChips = [250, 500, 750, 1000, 1500, 2000];
 
@@ -353,10 +336,13 @@ function App() {
       antdMessage.warning('No buckets configured yet. Seed via staff portal first (or hygiene test).');
       return;
     }
+    setApplyErrMsg(null);
+    // Optimistic effect: last-deposit-panel below will immediately reflect livePreview allocs as "applying..." (reused compute, no extra state)
     try {
       await applyDeposit({ variables: { amount: depositAmount } });
     } catch (e: any) {
-      antdMessage.error(`Apply failed: ${e.message}. Is the api running (pnpm --filter api dev)?`);
+      // onError + applyErrMsg handle resilience + inline error; fallback here too
+      setApplyErrMsg(e.message || 'Apply failed');
     }
   };
 
@@ -377,14 +363,42 @@ function App() {
     setLinkModalOpen(true);
   };
 
-  const handleLinkBucket = (bucketId: string) => {
+  const handleLinkBucket = async (bucketId: string) => {
     if (!selectedGoalForLink) return;
     const gid = selectedGoalForLink.id;
+    const gname = selectedGoalForLink.name;
+    // local update (keeps prior optimistic layer + merge in grid render)
     setLocalLinks((prev) => {
       const existing = prev[gid] || [];
       return { ...prev, [gid]: [...existing, bucketId].filter((v, i, a) => a.indexOf(v) === i) };
     });
-    antdMessage.success(`Linked! This bucket's allocation will now help fund "${selectedGoalForLink.name}" (optimistic in this view — real linkGoal available via staff or future public flows).`);
+    // Apollo optimisticResponse (per-call for goal lookup) + hook update fn patches currentState cache instantly
+    // so serverBuckets recomputes, linked state appears in tree/grid/preview/projections w/o roundtrip
+    const goalForOpt = goals.find((gg: any) => gg.id === gid);
+    try {
+      await linkGoal({
+        variables: { bucketId, goalId: gid },
+        optimisticResponse: {
+          __typename: 'Mutation',
+          linkGoal: {
+            __typename: 'Bucket',
+            id: bucketId,
+            goal: goalForOpt
+              ? {
+                  __typename: 'Goal',
+                  id: gid,
+                  name: goalForOpt.name,
+                  targetAmount: goalForOpt.targetAmount,
+                  description: goalForOpt.description,
+                }
+              : null,
+          },
+        } as any,
+      });
+      antdMessage.success(`Linked! Bucket allocation now persists to fund "${gname}".`);
+    } catch (e: any) {
+      antdMessage.error(`Link failed: ${e.message} (optimistic + local reconcile on refetch)`);
+    }
     setLinkModalOpen(false);
     setSelectedGoalForLink(null);
   };
@@ -536,6 +550,11 @@ function App() {
                     ${c}
                   </Button>
                 ))}
+                {lastDeposit && (
+                  <Button size="small" onClick={() => setDepositAmount(lastDeposit.amount)} data-e-ref="repeat-last-btn">
+                    Repeat last (${lastDeposit.amount})
+                  </Button>
+                )}
                 <Button type="primary" onClick={handleSimulate} loading={simulating} data-e-ref="preview-simulate-btn">
                   Simulate on server
                 </Button>
@@ -575,6 +594,15 @@ function App() {
                               {b?.percent?.toFixed(0)}%
                             </Tag>
                             <span style={{ color: '#52c41a', fontFamily: 'monospace' }}>${alloc.allocated.toFixed(0)}</span>
+                            {b?.linkedGoalIds && b.linkedGoalIds.length > 0 && (
+                              <Tag style={{ fontSize: 10, marginLeft: 4 }} color="blue" data-e-ref={`preview-linked-${alloc.bucketId}`}>
+                                →{' '}
+                                {b.linkedGoalIds
+                                  .map((gid: string) => goals.find((gg: any) => gg.id === gid)?.name)
+                                  .filter(Boolean)
+                                  .join(', ')}
+                              </Tag>
+                            )}
                           </span>
                           {alloc.spilled > 0.01 && (
                             <Tag color="orange" style={{ fontSize: 10 }} data-e-ref={`preview-spill-${alloc.bucketId}`}>
@@ -609,6 +637,52 @@ function App() {
 
               {lastSim && <div style={{ marginTop: 6, fontSize: 11, color: '#4ade80' }}>Last server sim matched client: ${lastSim.totalAllocated.toFixed(2)} allocated.</div>}
             </div>
+
+            {/* Full apply visibility (Brief 3): lastDeposit details + allocations list in preview (always, from currentState GQL) + post-apply (via justApplied/recentSuccess).
+                Optimistic effects: during applying, reuses livePreview allocs as pending "last" (zero-latency, matches computeLiveAllocations).
+                Richer success via recentSuccess + panel highlight. Minimal history = latest only. Error resilience via applyErrMsg inline.
+                @e dense for browser-verifier. Reuses exact GQL shape + compute. */}
+            {(lastDeposit || applying) && (
+              <div style={{ marginTop: 12, padding: 10, background: '#052e16', border: '1px solid #166534', borderRadius: 6 }} data-e-ref="last-deposit-panel" aria-live="polite">
+                <Typography.Text strong style={{ color: '#4ade80', fontSize: 12 }}>
+                  {applying && !lastDeposit
+                    ? `Applying $${depositAmount} now (optimistic preview — server confirming)...`
+                    : `Last deposit applied: $${(lastDeposit?.amount ?? 0).toFixed(0)} (allocated $${(lastDeposit?.totalAllocated ?? 0).toFixed(0)}, remainder $${(lastDeposit?.remainder ?? 0).toFixed(0)})`}
+                </Typography.Text>
+                {(lastDeposit?.allocations?.length > 0 || (applying && optimisticAllocForApply)) && (
+                  <List
+                    size="small"
+                    style={{ marginTop: 6 }}
+                    dataSource={applying && optimisticAllocForApply ? optimisticAllocForApply.allocations : lastDeposit.allocations}
+                    renderItem={(alloc: any) => (
+                      <List.Item key={alloc.bucketId} style={{ padding: '3px 0' }} data-e-ref={`last-deposit-item-${alloc.bucketId}`}>
+                        <div style={{ width: '100%', fontSize: 12 }}>
+                          <strong>{alloc.bucketName}</strong>{' '}
+                          <Tag color="green" style={{ fontSize: 10 }}>+${(alloc.allocated || 0).toFixed(0)}</Tag>
+                          {alloc.capped && <Tag color="gold" style={{ fontSize: 10 }}>MAX</Tag>}
+                          {(alloc.spillOverBucketUsed || (alloc.spilled && alloc.spilled > 0.01)) && (
+                            <Tag color="orange" style={{ fontSize: 10 }} data-e-ref={`last-spill-${alloc.bucketId}`}>spill</Tag>
+                          )}
+                          <span style={{ color: '#71717a', marginLeft: 6, fontSize: 10 }}>bucket {alloc.bucketId?.slice(0, 6)}</span>
+                        </div>
+                      </List.Item>
+                    )}
+                  />
+                )}
+                {recentSuccess && lastDeposit && (
+                  <div style={{ fontSize: 10, color: '#4ade80', marginTop: 4 }} data-e-ref="apply-rich-success">Richer success: full allocations + details now visible in last panel (post-apply + optimistic confirmed).</div>
+                )}
+                {applying && <div style={{ fontSize: 10, color: '#a3a3a3', marginTop: 2 }}>Live client optimistic (reused compute) — refetch will reconcile exact server result.</div>}
+              </div>
+            )}
+
+            {/* Inline error resilience for apply (shows on failure; clearable; does not break live preview) */}
+            {applyErrMsg && (
+              <Card size="small" style={{ background: '#450a0a', borderColor: '#7f1d1d', marginTop: 8 }} data-e-ref="apply-error">
+                <Typography.Text type="danger" style={{ fontSize: 12 }}>Apply error: {applyErrMsg}. Preview + client compute still live. </Typography.Text>
+                <Button size="small" onClick={() => setApplyErrMsg(null)} style={{ marginLeft: 8 }}>Clear</Button>
+              </Card>
+            )}
 
             <Typography.Text type="secondary" style={{ display: 'block', marginTop: 10, fontSize: 11 }}>
               Spillover + caps work automatically. Change the amount — watch the future fund itself. This is the "set and forget it" magic.
@@ -651,9 +725,10 @@ function App() {
             </Typography.Text>
           </Card>
 
-          {/* Projections & Long-term Outlook teaser (polished per ux wireframes + Epic-5): sample 3/6/12mo outlooks under different deposit scenarios.
-              Uses existing PROJECTIONS query (server cross-check for live deposit + N) OR client-compute (reusing deposit-calculator via computeClientProjections for optimistic/instant multi-scenario).
-              AntD Statistic + Progress "charts" + Cards. Optimistic on refetch/apply. Added @e data-refs. Keeps public green theme. */}
+          {/* Projections & Long-term Outlook (full per Brief 3 from PO: Completing Projections + Full Apply Visibility for public as vertical slice).
+              Expanded from teaser: more scenarios (5 incl. minimal/aggressive + last-deposit ready), lastDeposit comparison (reuses currentState.lastDeposit + computeClientProjections), goal impact notes, better viz (more cards, grid, extra stats, linked uplift).
+              Reuses GET_PROJECTIONS (server N-paycheck cross-check) + computeClientProjections / computeLiveAllocations (client optimistic multi-horizon, zero roundtrip).
+              AntD Statistic/Progress/Cards/Tags + @e dense. Optimistic on refetch/apply. Green public theme. Hygiene clean. */}
           <Card
             title="Projections & Long-term Outlook"
             extra={
@@ -672,15 +747,14 @@ function App() {
             data-e-ref="projections-longterm-outlook"
           >
             <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-              Sample future projections under different regular deposit scenarios. 3/6/12-month outlooks computed client-side (optimistic, reuses deposit allocation logic for instant feedback as buckets update). Progress bars
-              visualize relative growth outlook.
+              Full projections: more scenarios (incl. last-deposit comparison), goal impact, 3/6/12mo outlooks (client optimistic reusing deposit allocation logic for instant feedback as buckets update). Progress bars visualize growth. Apply in preview above updates outlooks live.
             </Typography.Text>
             {!hasBuckets && (
               <Tag color="warning" style={{ marginTop: 8 }}>
                 No buckets loaded — client projections + server cross-check will populate once seeded (staff or hygiene test).
               </Tag>
             )}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3" data-e-ref="outlook-scenarios-grid">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-3" data-e-ref="outlook-scenarios-grid">
               {longTermScenarios.map((sc) => {
                 const outlook = longTermOutlooks[sc.key];
                 return (
@@ -710,6 +784,10 @@ function App() {
                         </div>
                       );
                     })}
+                    {/* Goal impact (Brief 3): linked buckets get share of every future deposit's growth in these outlooks */}
+                    <div style={{ fontSize: 9, color: '#4ade80', marginBottom: 4 }} data-e-ref={`goal-impact-${sc.key}`}>
+                      Goal impact: {serverBuckets.filter((b: any) => (b.linkedGoalIds || []).length > 0).length} linked buckets prioritized
+                    </div>
                     <Button
                       size="small"
                       style={{ marginTop: 4, width: '100%' }}
@@ -725,13 +803,37 @@ function App() {
                 );
               })}
             </div>
-            {/* Server cross-check: still uses the existing PROJECTIONS query (tied to current depositAmount + projCount) for verification / "ground truth" comparison. */}
+
+            {/* lastDeposit comparison (full projections): compare outlooks using your actual last deposit amount vs current scenarios. Reuses computeClientProjections + GQL lastDeposit. Goal impact summary. */}
+            {lastDeposit && (
+              <div style={{ marginTop: 10, paddingTop: 6, borderTop: '1px dashed #166534', fontSize: 11 }} data-e-ref="proj-last-deposit-cmp">
+                <Typography.Text type="secondary">Last deposit comparison (your last: ${lastDeposit.amount}, allocated ${lastDeposit.totalAllocated?.toFixed?.(0) ?? lastDeposit.totalAllocated}):</Typography.Text>
+                {[3, 6, 12].map((mo) => {
+                  const p = computeClientProjections(lastDeposit.amount, mo, serverBuckets);
+                  const g = p.finalTotal - currentTotalBalance;
+                  return (
+                    <span key={mo} style={{ marginLeft: 6, fontSize: 10 }} data-e-ref={`proj-last-${mo}mo`}>
+                      {mo}mo ~${Math.round(p.finalTotal)} (+${Math.round(g)})
+                    </span>
+                  );
+                })}
+                <div style={{ fontSize: 10, color: '#4ade80', marginTop: 2 }} data-e-ref="proj-goal-impact-summary">
+                  Goal impact: {serverBuckets.filter((b: any) => (b.linkedGoalIds || []).length > 0).length} linked buckets will automatically receive % of every deposit in these projections (see My Goals cards for live projected saved).
+                </div>
+              </div>
+            )}
+
+            {/* Server cross-check: reuses the existing PROJECTIONS query (tied to current depositAmount + projCount) for verification / "ground truth" comparison. Enhanced with last cmp + linked. */}
             {projData?.projections && (
               <div style={{ marginTop: 12, paddingTop: 8, borderTop: '1px dashed #166534', fontSize: 11 }} data-e-ref="server-projections-crosscheck">
                 <Typography.Text type="secondary">
                   Server-backed (existing projections query) for your current $${projData.projections.amount} × {projData.projections.count}:{' '}
                 </Typography.Text>
                 <strong style={{ color: '#52c41a' }}>${projData.projections.finalProjectedTotal.toFixed(0)}</strong> final total.
+                <span style={{ color: '#71717a', marginLeft: 6 }}>• {serverBuckets.filter((b: any) => (b.linkedGoalIds || []).length > 0).length} bucket(s) linked to goals (optimistic + persisted)</span>
+                {lastDeposit && (
+                  <span style={{ color: '#4ade80', marginLeft: 6 }} data-e-ref="server-proj-last-cmp">• last was ${lastDeposit.amount}</span>
+                )}
                 <span style={{ color: '#71717a' }}>
                   {' '}
                   (sample periods:{' '}
@@ -744,7 +846,7 @@ function App() {
               </div>
             )}
             <div style={{ fontSize: 10, color: '#71717a', marginTop: 8 }}>
-              Optimistic client updates on bucket refresh/apply (refetch). No interest modeled. Change scenarios or use "Apply" in preview above — watch the outlooks move. Ready for @e verification.
+              Optimistic client updates on bucket refresh/apply (refetch). No interest modeled. More scenarios + last deposit cmp + goal impact now live. Change scenarios or use "Apply" / "Repeat last" in preview above — watch the outlooks + last panel move. Dense @e ready for browser-verifier / agent-evaluator.
             </div>
           </Card>
 
@@ -783,7 +885,7 @@ function App() {
           )}
         />
         <Typography.Text type="secondary" style={{ fontSize: 11, marginTop: 8, display: 'block' }}>
-          (Optimistic client update only in this public demo slice. Full persistence uses linkGoal mutation.)
+          (localLinks layer + Apollo optimisticResponse + linkGoal mutation + onCompleted refetch now active. Linked state in grid/tree/preview/projections.)
         </Typography.Text>
       </Modal>
     </div>

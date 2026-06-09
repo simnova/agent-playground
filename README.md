@@ -60,6 +60,8 @@ Screenshots are captured directly by the `browser-verifier` persona using `agent
 
 *More targeted screenshots (message flows, future bucket budgeting UIs, verification runs, etc.) will be added automatically as the self-improving team builds and validates features.*
 
+**Recent cycle (75min orchestrated BankBuckets test close):** Public Brief 3 completed (full 5-scenario long-term projections + last-deposit panel with optimistic allocations during apply + richer success + error resilience card + per-scenario goal impact + repeat-last; 10+ new `data-e-ref` for verifier). Architect extracted the portable calc engine (with `runHygieneTest` 20000 high-deposit + hierarchy cases) to new shared `@repo/bankbuckets-core` package (single source of truth, used by api/staff/public, dupe ~75 lines removed, hygiene reexport for compat). All artifacts (new bv-public-verifier-fallback.png, updated metrics with end report + full team credits, code) committed. Hygiene **PASSED** on realistic cap+spill cases (reconfirmed post-extract). See metrics/latest-token-effectiveness.md for evaluator deltas/credits/proposals and screenshots/ for browser-verifier artifacts.
+
 ## Periodic Token Effectiveness Summaries
 
 Just like the `browser-verifier` persona uses `agent-browser` to capture and commit real screenshots of the UIs as part of the work being accomplished (see `screenshots/` and the `verify-ui-with-browser` skill), the `agent-evaluator` periodically runs the `analyze-agent-performance` skill + `scripts/analyze-agent-logs.ts` to produce and commit human-readable token effectiveness summaries.

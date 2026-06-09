@@ -4,6 +4,6 @@ packages:
 allowBuilds:
   '@apollo/protobufjs': set this to true or false
   agent-browser: true
-  esbuild: set this to true or false
+  esbuild: true
   mongodb-memory-server: true
   sharp: set this to true or false
