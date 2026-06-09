@@ -62,7 +62,7 @@ required = false
 description = "Any generated design docs, wireframe files, or component usage guidelines"
 
 [model]
-grok-build
+deepseek-4-pro
 
 [reasoning_effort]
 high

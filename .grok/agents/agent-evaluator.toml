@@ -1,0 +1,4 @@
+description = "Lightweight meta-evaluator that analyzes Grok logs (unified.jsonl, per-subagent signals.json/summary.json), todo progress, and real outputs to measure productivity, escalation/descale effectiveness, and token efficiency. Proposes targeted refinements to personas and orchestrator strategy. Runs on cheap models."
+default_capability_mode = "read-only"
+model = "deepseek-4-fast"
+prompt_file = ".grok/personas/agent-evaluator.toml"

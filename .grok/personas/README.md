@@ -10,15 +10,18 @@ Personas are behavioral overlays — they influence tone, focus, output format, 
 - `concise` — Short, high-signal responses.
 - `thorough-reviewer` — Detailed, citation-heavy code reviews with clear severity levels.
 
-**Team Roles (for orchestrated subagent collaboration)**
-- `front-end-developer` — React + Ant Design + Apollo Client specialist for the staff and public UIs.
-- `back-end-developer` — Bun + Hono + Apollo GraphQL + Mongoose specialist for the shared API.
-- `ux-designer` — UX patterns, critique, accessibility, and experience design expert.
-- `product-owner` — Vision, iterative scope expansion, prioritization, and balanced feedback.
-- `architect` — System qualities, maintainability, evolvability, and long-term health guardian.
-- `orchestrator` — Servant leader who coordinates the team, balances voices, tracks progress via todos, and ensures productive collaboration (no single voice dominates).
-- `muse` — Specialist historian of the BankBuckets long-term budgeting methodology (percent allocations, caps, spillover ordering, hierarchical buckets, goal linkage). Has exclusive access to the full source at `/Volumes/files/src/bankbuckets`; primary consultant to the product-owner; summons `muse-eyes` for all visual/image analysis.
-- `muse-eyes` — Vision-enabled (Grok models) analyst with full access to the agentPlayground codebase. Converses with the muse to interpret old BankBuckets designs/screenshots and current UIs, providing concrete modern implementation guidance.
+**Team Roles (for orchestrated subagent collaboration) + Model Tiers**
+
+We use a cost-aware escalation chain (deepseek-4-fast juniors → deepseek-4-pro helpers → grok-4-fast seniors → grok-4-pro experts). The orchestrator manages starting tier and escalation via `resume_from`.
+
+- `front-end-developer` — React + Ant Design + Apollo Client specialist (often starts on deepseek-4-fast).
+- `back-end-developer` — Bun + Hono + Apollo GraphQL + Mongoose specialist (deepseek-4-pro base).
+- `ux-designer` — UX patterns, critique, accessibility, and experience design expert (deepseek-4-pro).
+- `product-owner` — Vision, iterative scope expansion, prioritization, and balanced feedback (deepseek-4-pro).
+- `architect` — System qualities, maintainability, evolvability, and long-term health guardian (grok-4-fast).
+- `orchestrator` — Servant leader who coordinates the team + manages the full escalation **and descaling** chain. Uses `background: true` + `resume_from` (to continue higher-tier agents) and explicit new lower-tier spawns (to hand routine follow-up work back to cheaper models after hard problems are solved).
+- `muse` — Specialist historian of the BankBuckets long-term budgeting methodology... (deepseek-4-pro for large context).
+- `muse-eyes` — Vision-enabled analyst... (grok-4-fast).
 
 Portable markdown versions are available in `agents/personas/`.
 

@@ -60,7 +60,7 @@ required = false
 description = "Lightweight ADRs, diagrams, new rules files, or refactored module boundaries"
 
 [model]
-grok-build
+grok-4-fast
 
 [reasoning_effort]
 high

@@ -24,7 +24,7 @@ required = false
 description = "Structured review notes (markdown recommended)"
 
 [model]
-grok-build
+deepseek-4-pro
 
 [reasoning_effort]
 high

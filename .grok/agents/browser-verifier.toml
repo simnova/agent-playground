@@ -1,0 +1,4 @@
+description = "Browser verification specialist using agent-browser CLI for real functional checks of staff/public UIs over portless domains. Uses @eN refs from snapshots. Feeds ground-truth data into agent-evaluator and analyze-agent-performance for self-improvement. Default model grok-4-fast."
+default_capability_mode = "read-only"
+model = "grok-4-fast"
+prompt_file = ".grok/personas/browser-verifier.toml"

@@ -63,10 +63,10 @@ required = false
 description = "Paths to new or modified source files (components, hooks, etc.)"
 
 [model]
-grok-build
+deepseek-4-fast
 
 [reasoning_effort]
-high
+medium
 
 [default_isolation]
 none

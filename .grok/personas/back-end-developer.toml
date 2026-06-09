@@ -64,7 +64,7 @@ required = false
 description = "Paths to modified schema.ts, resolvers.ts, new models, etc."
 
 [model]
-grok-build
+deepseek-4-pro
 
 [reasoning_effort]
 high

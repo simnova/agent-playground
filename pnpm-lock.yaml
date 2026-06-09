@@ -29,6 +29,9 @@ importers:
       '@typescript/native-preview':
         specifier: beta
         version: 7.0.0-dev.20260421.2
+      agent-browser:
+        specifier: ^0.27.1
+        version: 0.27.1
       knip:
         specifier: ^6.16.1
         version: 6.16.1
@@ -2125,6 +2128,11 @@ packages:
   agent-base@7.1.4:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
+
+  agent-browser@0.27.1:
+    resolution: {integrity: sha512-lLzpWDV7nlVsA5km7yMCH1wppvnLLNx160hLwLdDUkCst9x38UhhxoiTmmJ2qreOnCa/Hp4/Gm6Adkahhtb6Hg==}
+    engines: {node: '>=24.0.0', pnpm: '>=11.0.0'}
+    hasBin: true
 
   aggregate-error@3.1.0:
     resolution: {integrity: sha512-4I7Td01quW/RpocfNayFdFVk1qSuoh0E7JrbRJ16nH01HhKFQ88INq9Sd+nd72zqRySlr9BmDA8xlEJ6vJMrYA==}
@@ -5970,6 +5978,8 @@ snapshots:
       negotiator: 0.6.3
 
   agent-base@7.1.4: {}
+
+  agent-browser@0.27.1: {}
 
   aggregate-error@3.1.0:
     dependencies:

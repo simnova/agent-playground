@@ -61,7 +61,7 @@ required = false
 description = "Optional small code sketches, component usage examples, or file:line references in the agentPlayground that would support the visual direction"
 
 [ model ]
-grok-build
+grok-4-fast
 
 [reasoning_effort]
 high

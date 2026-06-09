@@ -59,7 +59,7 @@ required = false
 description = "Updated todo/backlog items or product notes"
 
 [model]
-grok-build
+deepseek-4-pro
 
 [reasoning_effort]
 medium
