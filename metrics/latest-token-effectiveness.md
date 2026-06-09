@@ -435,3 +435,19 @@ Strong: full vertical (core engine for muse % hierarchy + UI editor/Trees/goal v
 Low-cost Post-Brief-4 checkpoint complete (todos updated; metrics appended; writeup ready). All per explicit task + persona + first actions.
 
 (End of Post-Brief-4 cycle checkpoint.)
+
+**Brief 5 test expansion complete (post infra + Brief 4 baseline of 6 tests):** Cheap back-end junior sub 019eaa4b-d937-7ac0-b325-4d017cb17fb0 (171s, 31 tools, 1 turn) finished the remaining expansion on top of the 3 new v2 cases from Brief 4 work.
+
+- +3 additional vitest cases in `packages/bankbuckets-core/test/hygiene.test.ts` (total 9 tests / 6 new, exceeding PO Brief 5 target >=5 new / >=8 overall + architect maintainability-1 for v2 recursion/NaN/edge/spillover):
+  1. NaN/neg/zero deposit inputs + bad bucket data (NaN pct, neg maxAmount, zero pct) → finite 0-allocs, correct remainder for non-positive, no NaN outputs (exercises top-level finite guard + `Math.max(0, pct||0)` + post-alloc guards).
+  2. Deeper 4+ level spillover with caps (root → c1 → c2 → c3 → leaves; explicit `spillOverBucketUsed` + waterfall at bottom; v2 containers get 0 direct alloc entries).
+  3. Remainder when all capped at subtree + normalization sum<1 at multiple levels (top children sum<1 + level-2 sum<1 + all terminals capped; global waterfall + v2 subdivide exercised; lost remainder quantified).
+- Minimal enabler edit only in `src/index.ts`: top-level `if (!currentBuckets || ... || !Number.isFinite(depositAmount) || depositAmount <= 0)` early return with safe remainder (and `Math.max(0, ...)` already present); zero behavior change for all positive finite inputs (20000 flat, Brief 4 v2 cases, hierarchy scaffold, runHygieneTest internal, reexport paths).
+- Verification: `pnpm --filter @repo/bankbuckets-core test` → 9/9 passed (7ms); exact same 20000 HYGIENE PASSED + "HIERARCHY SCAFFOLD TEST (Brief 4 v2...): PASSED child allocated: 1000" stdout as prior checkpoints. `bun -e` direct on core + via `apps/api/src/graphql/deposit-calculator.ts` thin reexport: exports confirmed, realistic BankBuckets samples (20000 + multi-level) + `runHygieneTest()` all emit "HYGIENE TEST PASSED" + "REEXPORT HYGIENE: OK" with no NaN/runtime error. All prior 6 tests + 20000 repro + Brief 4 v2 cases byte-for-byte preserved in behavior/asserts/logs.
+- Grep: 9 `it(` blocks; targeted new edge strings present. No drift on v1 flat compat or reexport hygiene (critical for verifier/evaluator/legacy bun -e / AGENTS fallbacks).
+
+This, combined with the prior infra junior (turbo "test" task + root script + tsconfig fix) and Brief 4's 3 cases, fully delivers PO Brief 5 + architect item 1. Core now has strong edge coverage for the v2 recursive hierarchy engine while keeping the entire prior surface (flat 20000 repro, UIs, resolvers, hygiene paths) stable and green. 9 tests is a solid base for future Brief 6 / more public projections work.
+
+Brief 4 full vertical + Brief 5 tests now complete. Browser-verifier (public/Epic-5 + Brief 4 hierarchy @e exercise) is in flight per evaluator proposal. Brief 6 (public depth + guardian hardening) is the natural next PO brief for delegation.
+
+(End of Brief 5 test expansion note.)
