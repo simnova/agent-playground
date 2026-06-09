@@ -119,3 +119,43 @@ Will be combined with the spawn hygiene template helper in the immediate next mi
 - All changes will be committed with artifacts before any "user-visible" resumption of feature work.
 
 The environment modifications are live for the agent system. The self-improving IAEP loop is now the default mode for continued work.
+
+## Autonomous Loop Start (user request: add periodic publish + start the loop)
+
+**Date of this autonomous cycle start**: Tue Jun 9 00:28:40 EDT 2026 (fresh baseline captured via terminal as part of starting the IAEP loop).
+
+**Fresh baseline at loop start** (reproducible with direct commands; script can be used when tsx resolves cleanly):
+- Public @e source (apps/public/src/App.tsx): 55 instances, 33 unique values, 7 Brief6+ specific (proj-per-bucket|goal-impact-over-time|interactive-horizon etc).
+- bv-public screenshots committed: 6 (latest: bv-public-epic5-brief6.png, bv-public-verifier-fallback.png, bv-public-post-apply.png).
+- Guardian health snapshot (persisted reference from prior 300s PUBLIC run): public-epic5 mode, 30 checks, 0 restarts, healthy services.
+- Core hygiene: 9/9 passed (bankbuckets-core test run clean).
+- Git/IAEP state: On main (HTTPS remote https://github.com/simnova/agent-playground.git), recent tag agent-iaep-iter-001-progress, uncommitted IAEP-related files from prior autonomous step.
+
+**Hypothesis for this loop cycle (Iteration 001 continuation / transition to 002)**:
+- Codify "periodically publish to GitHub" as an explicit, required step inside the IAEP Close phase (so publishing becomes automatic and part of every self-improvement cycle, as requested).
+- Integrate the new `scripts/spawn-hygiene.sh` helper into the orchestrator persona for mechanical enforcement (reduces variance, supports autonomy).
+- These are small, isolated, high-confidence refinements that improve loop reliability and artifact visibility on GitHub without increasing token cost.
+
+**Changes implemented autonomously in this cycle start**:
+- Updated `metrics/iterations/000-IAEP-PROCESS.md` to add a new "Publishing to GitHub" section as a mandatory step in Close (run `git push origin main` via CLI after commit+tag; record in the iteration report).
+- Updated `metrics/iterations/ITERATION-TEMPLATE.md` to require the publish step in the Close section.
+- Updated `.grok/personas/orchestrator.toml` (spawn hygiene section) to recommend/require running `./scripts/spawn-hygiene.sh <persona> "<task>"` to generate the exact condensed prompt. This makes hygiene consistent for autonomous spawns.
+- (The spawn-hygiene.sh itself was created in the immediate prior autonomous micro-step.)
+
+All changes include IAEP references and are minimal.
+
+**Artifacts produced in this autonomous step**:
+- This appended section in 001-....md.
+- Updates to the process doc and template (committed as part of starting the loop).
+- Persona update (with hygiene helper reference).
+- Will be followed immediately by: git add/commit (with IAEP message), new tag (agent-iaep-iter-002-start or similar), and `git push origin main`.
+
+**Publish step (executed as part of starting the loop)**:
+- After the commit below, `git push origin main` will be run via command line.
+- This fulfills the "periodically publish to github" requirement and makes the loop self-publishing.
+
+**Decision**: These changes improve the loop's autonomy and GitHub visibility. They will be measured in the next full evaluator review (cheaper analysis via auto-capture, better hygiene compliance). No revert needed; amplify in future iterations (e.g., more helpers, scheduled publishes).
+
+This starts the autonomous IAEP loop as requested. Future cycles will repeat: baseline capture → small refinement(s) → artifact update → commit + tag → publish. The orchestrator will drive this with minimal intervention, interleaving with BankBuckets delivery work, always leaving the required rich artifacts for traceability.
+
+Next autonomous action in this response: perform the commit, tag, and publish.

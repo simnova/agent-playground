@@ -59,3 +59,11 @@ All changes must include an inline comment: `// IAEP Iteration NNN: ... See metr
 ---
 
 *This template ensures every iteration leaves a self-contained, auditable record.*
+
+## Close & Publish
+- ...
+- Commit + tag.
+- **Publish**: `git push origin main` (CLI). Record success/failure and any output in this report.
+- Update this file with the publish result.
+
+**IAEP Loop Note**: Publishing is now a standing requirement for every iteration to keep the self-improvement artifacts (this report, metrics, tags, helpers) live on GitHub without user intervention.

@@ -151,3 +151,15 @@ The `agent-evaluator` persona + `analyze-agent-performance` skill are the primar
 See also: `AGENTS.md` (spawn hygiene, descaling, guardian protocol, harness notes), the `analyze-agent-performance` skill, and recent dated metrics files for examples of the data we track.
 
 This process turns the agent team into a product that improves itself measurably, with a clear audit trail.
+
+## Publishing to GitHub (added as explicit periodic step in the loop)
+
+As part of every IAEP iteration close (per user request to make publishing periodic within the self-improvement loop):
+
+- After the git commit of artifacts and creating the tag:
+  - `git push origin main` (using git from the command line, as established in prior sessions; remote is maintained as HTTPS for reliability when gh CLI auth is available).
+- This ensures all iteration reports, metrics updates, new helper scripts, screenshots references, and process changes are published to https://github.com/simnova/agent-playground.git without manual intervention.
+- If push fails (e.g. transient auth), log it in the iteration .md and retry on next cycle or use `gh` CLI fallback if needed (`gh repo sync` or manual).
+- The publish step itself is lightweight and becomes part of the "Close" phase KPIs (e.g., "artifacts published: yes/no, remote ahead: 0").
+
+This was bootstrapped in the first autonomous loop start after the IAEP process was defined.
