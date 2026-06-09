@@ -1,210 +1,110 @@
 # agentPlayground
 
-A playground and library for AI agent capabilities (focused on Grok but portable across tools).
+**A playground and living laboratory for advanced, self-improving AI agent teams.**
 
-This is a custom Turborepo monorepo (not the vanilla starter).
+Focused on Grok but designed to be portable across tools (Claude, Cursor, GitHub Copilot, and more). Explore rich multi-agent orchestration, specialized personas, cost-conscious model tiers, real browser-based functional verification, and continuous self-improvement — all while building a modern full-stack monorepo.
 
-## What's inside?
+## Why agentPlayground?
 
-This Turborepo includes the following apps and packages:
+Traditional agent setups often rely on assumptions: "the code compiles, the review passed, so it must work." This project changes that.
 
-### Apps
+- **Orchestrated team of specialists**: An `orchestrator` (servant leader) coordinates personas like `front-end-developer`, `back-end-developer`, `ux-designer`, `architect`, `product-owner`, `muse` (drawing inspiration from the historical BankBuckets long-term budgeting methodology with % allocations, spillover, caps, and goals), and more.
+- **Real functional verification**: The new `browser-verifier` persona uses the [agent-browser](https://agent-browser.dev/) CLI to actually drive the live UIs (`https://staff.localhost`, `https://public.localhost`) with structured `@eN` element references, fill/click/wait flows, and snapshots. No more guessing — see what a real user would experience.
+- **Cost-conscious & tiered intelligence**: Work starts on fast/cheap models (deepseek-4-fast "juniors"), escalates to stronger ones (deepseek-4-pro, grok-4-fast "seniors", grok-4-pro "experts") only when needed, then explicitly **descales** back to cheap agents for follow-on work using clean handoffs + shared todos.
+- **Self-improving system**: The `agent-evaluator` (powered by the `analyze-agent-performance` skill) periodically reviews real execution data — Grok logs (tokens, model time, escalation success), todo progress, terminal outputs, **and actual browser verification results**. It proposes targeted refinements to personas, prompts, model defaults, and orchestration rules. The team literally gets smarter and more efficient over time.
+- **Practical full-stack foundation**: Vite + React + Ant Design (primary) + Apollo Client UIs, Hono + Apollo GraphQL + Mongoose backend, Turborepo + pnpm, strict TypeScript 7 + tsgo, portless for stable HTTPS .localhost dev, and rich skills/personas for portability.
 
-- `staff`: Internal staff portal — Vite + React + TypeScript + Ant Design (primary UI library) + Apollo Client. Blue theme.
-- `public`: Public / customer-facing site — same stack as staff (green theme).
-- `api`: Backend — Bun + Hono + Apollo GraphQL + Mongoose (with mongodb-memory-server for tests). Also has Azure Functions adapter.
+Whether you're researching advanced agent patterns, building your own team-based workflows, or just want a clean modern monorepo with real AI augmentation — this is the place.
 
-### Packages
+## The Agent Team
 
-- `@repo/ui`: Shared React components, including the theme-aware `AntdProvider`.
-- `@repo/config-typescript`: Strict TypeScript configuration (base, react, node, vitest, etc.) + tsgo support.
+The orchestrator manages a cross-functional team using `spawn_subagent` + personas (defined in `.grok/personas/` for Grok power and `agents/personas/` for portability). Key members include:
 
-- Official **turborepo** skill (from vercel/turborepo) is available in both `.grok/skills/turborepo/` (Grok-native) and `agents/skills/turborepo/` (portable). Use it for any monorepo / turbo questions.
+- **orchestrator** (grok-4-fast): Servant leader that breaks down work, manages the model escalation/descale chain, schedules performance reviews, and synthesizes results.
+- **muse** (deepseek-4-pro): Historian and specialist inspired by the classic BankBuckets app. Brings long-term, percentage-driven, spillover-capable budgeting concepts into the modern stack.
+- **browser-verifier** (grok-4-fast): Drives the actual browser with agent-browser to verify UIs are truly functional (not just "the code looks good").
+- **agent-evaluator** (deepseek-4-fast): Cheap, data-driven analyst that measures productivity, token efficiency, escalation success, descaling effectiveness, and real browser pass rates — then proposes refinements.
+- **front-end-developer**, **back-end-developer**, **ux-designer**, **architect**, **product-owner**, and supporting personas (reviewer, etc.).
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/). (Using TypeScript 7 + `tsgo` for checking.)
+See [AGENTS.md](AGENTS.md) and [agents/STRUCTURE.md](agents/STRUCTURE.md) for the full model.
 
-### TypeScript 7 + tsgo
+## Screenshots
 
-This repo uses **TypeScript 7** via the native Go-based compiler (`tsgo`) from [@typescript/native-preview](https://www.npmjs.com/package/@typescript/native-preview).
+Screenshots are captured directly by the `browser-verifier` persona using `agent-browser screenshot` (and the `verify-ui-with-browser` skill) as new functionality is implemented. They are committed here so you can see real progress on GitHub.
 
-- Type checking tasks (`check-types`) run with `tsgo --noEmit` instead of `tsc`.
-- The `@typescript/native-preview` package provides the `tsgo` executable.
-- For the best editor experience, install the [TypeScript (Native Preview)](https://marketplace.visualstudio.com/items?itemName=TypeScriptTeam.native-preview) VS Code extension and enable it:
-  ```json
-  { "js/ts.experimental.useTsgo": true }
-  ```
-### Utilities
+**Staff App (Internal Portal)**
 
-This Turborepo has some additional tools already setup for you:
+![Staff App](screenshots/staff-hero.png)
 
-- [TypeScript](https://www.typescriptlang.org/) (via `tsgo` / native preview) for static type checking
-- [Biome](https://biomejs.dev/) for linting and formatting
-- [Knip](https://knip.dev/) for finding unused files, exports and dependencies
-- [@e18e/cli](https://e18e.dev/) for ecosystem performance and dependency analysis
+**Public App (Customer-Facing)**
 
-### Build
+![Public App](screenshots/public-hero.png)
 
-To build all apps and packages, run the following command:
+*More targeted screenshots (message flows, future bucket budgeting UIs, verification runs, etc.) will be added automatically as the self-improving team builds and validates features.*
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+## Getting Started
 
-```sh
-turbo build
-```
+### Local Development with Portless (Recommended)
 
-Without global `turbo`, use your package manager:
+This monorepo uses [portless](https://github.com/vercel-labs/portless) for stable HTTPS URLs like `https://staff.localhost` — perfect for realistic testing, cookies, and agent-browser verification.
 
 ```sh
-npx turbo build
-pnpm dlx turbo build
-pnpm exec turbo build
-```
-
-You can build a specific app or package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=staff
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo build --filter=staff
-pnpm exec turbo build --filter=staff
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-npx turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific app by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=staff
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=staff
-pnpm exec turbo dev --filter=staff
-```
-
-### Local Development with Portless (HTTPS .localhost URLs)
-
-This monorepo uses [portless](https://github.com/vercel-labs/portless) to provide stable HTTPS URLs (e.g. `https://staff.localhost`, `https://api.localhost`) instead of raw ports. This is especially useful for auth flows, secure cookies, and production-like local dev.
-
-**Setup (first time):**
-
-```sh
-# Trust the local CA (may prompt for sudo on macOS/Linux)
+# Trust the local CA (may prompt for sudo)
 pnpm exec portless trust
 
-# Start the proxy (optional; it auto-starts when you run apps)
-pnpm proxy
-```
-
-**Run development (recommended with Turborepo):**
-
-```sh
-# Starts all apps through portless (staff, public, api)
+# Start everything (staff + public + api) through the proxy
 pnpm dev
-
-# Or without portless (plain ports, for CI or quick checks)
-pnpm dev:direct
 ```
 
-**Direct usage:**
+Access the apps:
+- Staff: https://staff.localhost
+- Public: https://public.localhost
+- GraphQL: https://api.localhost/graphql
 
-- `portless` from repo root → starts all workspace "dev" scripts through the proxy.
-- `portless staff` (or cd into app and run `portless`) → specific app.
-- Access UIs at:
-  - Staff: https://staff.localhost
-  - Public: https://public.localhost
-  - API (GraphQL): https://api.localhost/graphql
+See the full portless section below for escape hatches and direct usage.
 
+### The Agent System
 
-The `portless.json` at root configures names and inner scripts for the monorepo + Turborepo integration.
+- Use `/agents` or `/personas` in the Grok TUI to explore.
+- The orchestrator (you or a subagent) uses `spawn_subagent` with personas for collaboration.
+- Self-improvement runs via `agent-evaluator` + `analyze-agent-performance` (includes real browser checks).
+- All definitions are portable (Claude, Cursor, Copilot, etc. can use the `agents/` markdown versions).
 
-Each app's `package.json` uses the pattern:
+## Architecture & Advanced Features
 
-```json
-"dev": "portless",
-"dev:app": "<real command>"
-```
+- **Monorepo**: Turborepo + pnpm workspaces, Vite (staff/public), Hono + Apollo (api with Mongoose).
+- **Agent Capabilities**: Rich skills in `.grok/skills/` (Grok-native) and `agents/skills/` (portable). Custom personas with model/reasoning overrides.
+- **Cost-Conscious Orchestration**: Explicit escalation (juniors → seniors) + descaling for follow-up work.
+- **Real Verification Loop**: `browser-verifier` + agent-browser ensures the UIs are actually usable. Results drive the evaluator.
+- **Self-Improvement**: Logs + browser outcomes → metrics → persona/prompt refinements → better future runs.
 
-Portless injects `PORT`, `PORTLESS_URL`, etc., into the child processes. The API respects `process.env.PORT`. Vite configs have the port override commented so portless controls it.
+See:
+- [AGENTS.md](AGENTS.md) — Primary instructions and team model.
+- [.grok/personas/](.grok/personas/) and [agents/personas/](agents/personas/) — Persona definitions.
+- The `analyze-agent-performance` and `verify-ui-with-browser` skills.
 
-**Escape hatches:**
+## Utilities & Tooling
 
-- `PORTLESS=0 pnpm dev` or `pnpm dev:direct` — bypass portless.
-- Run a specific app directly: `PORTLESS=0 pnpm --filter staff dev:app`
+- TypeScript 7 + `tsgo` (native Go compiler) for fast, strict checking.
+- Biome for lint/format.
+- Knip for dead code detection.
+- Portless for HTTPS dev.
+- agent-browser for agent-driven browser automation and verification.
 
-See `portless --help` or the [portless README](https://github.com/vercel-labs/portless) for more (including LAN mode, Tailscale sharing, etc.).
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+## Useful Commands
 
 ```sh
-turbo login
+pnpm dev                 # Full dev with portless
+pnpm build               # Build everything
+pnpm check-types         # Strict TS7 check with tsgo
+pnpm lint:fix            # Biome fixes
+pnpm knip                # Dead code / unused analysis
 ```
 
-Without global `turbo`, use your package manager:
+## License & Contributing
 
-```sh
-npx turbo login
-pnpm exec turbo login
-```
+This is an open playground for agent experimentation. Contributions that advance the self-improving team model, add new personas/skills, or improve verification are especially welcome.
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+---
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+*Built as a showcase for what sophisticated, cost-aware, self-improving agent teams can achieve when given real feedback loops (logs + actual browser interactions) instead of assumptions.*
