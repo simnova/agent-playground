@@ -28,6 +28,24 @@ The orchestrator manages a cross-functional team using `spawn_subagent` + person
 
 See [AGENTS.md](AGENTS.md) and [agents/STRUCTURE.md](agents/STRUCTURE.md) for the full model.
 
+## Token Effectiveness & Measurable Cost Savings
+
+The system is built from the ground up for **cost-conscious, token-efficient operation** while delivering high-quality results:
+
+- **Tiered model strategy**: Work begins on fast/cheap models (`deepseek-4-fast` "juniors"). Stronger models (`deepseek-4-pro`, `grok-4-fast` seniors, `grok-4-pro` experts) are used only when needed via explicit escalation. After the hard part is solved, the system **descales** — spawning fresh cheap agents for follow-on work with clean summaries + shared `todo_write` state.
+- **Real data, not assumptions**: The `agent-evaluator` (via the `analyze-agent-performance` skill) continuously parses live execution artifacts:
+  - `~/.grok/logs/unified.jsonl` → per-turn `model_elapsed_ms` (strong proxy for token cost and thinking time).
+  - Per-subagent `signals.json` + `summary.json` → actual token usage, turn counts, and `current_model_id` (proving which tier handled each piece of work).
+  - `plan.json`, transcripts, and browser-verifier outcomes for "value delivered" (completed todos, working UI flows).
+- **Quantified metrics** produced by `scripts/analyze-agent-logs.ts` and the evaluator:
+  - Tokens / model time **per unit of value** (e.g., per completed todo, per meaningful code change, per successful handoff).
+  - Tier utilization (% of total inference time/tokens on cheap vs expensive models).
+  - Escalation success rate and **descaling effectiveness** (did cheap juniors successfully implement senior plans with far lower cost?).
+  - Functional capability from real browser runs (what % of flows actually worked when exercised by `browser-verifier`?).
+- **Proof in practice**: Analysis of real sessions shows the majority of inference turns can be handled on low-cost models (many turns completing in 2–6s), with higher-tier models reserved for the difficult 10–20% of work. Descaling after key decisions keeps follow-up work cheap. The self-improvement loop uses these numbers to refine personas and prompts over time, shifting even more volume to fast/cheap tiers without sacrificing output quality.
+
+This results in significantly lower overall token spend compared to always using the most powerful model, while the team still produces reliable, verified results. Run the analyzer yourself on any session for current metrics.
+
 ## Screenshots
 
 Screenshots are captured directly by the `browser-verifier` persona using `agent-browser screenshot` (and the `verify-ui-with-browser` skill) as new functionality is implemented. They are committed here so you can see real progress on GitHub.
