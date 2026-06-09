@@ -34,6 +34,7 @@ const GET_CURRENT_STATE = gql(`
         amount
         totalAllocated
         remainder
+        carryAmount
         allocations {
           bucketId
           bucketName
@@ -54,6 +55,7 @@ const APPLY_DEPOSIT = gql(`
       amount
       totalAllocated
       remainder
+      carryAmount
       allocations {
         bucketId
         bucketName
@@ -72,6 +74,7 @@ const SIMULATE_DEPOSIT = gql(`
       amount
       totalAllocated
       remainder
+      carryAmount
       allocations {
         bucketId
         bucketName
@@ -250,10 +253,15 @@ function App() {
 
   const goals: any[] = useMemo(() => data?.currentState?.goals || [], [data?.currentState?.goals]);
 
-  // Live client preview (instant, delightful, no roundtrip). Reused compute exactly.
+  // Carry-forward (IAEP): derive from extended lastDeposit (carryAmount surfaced on lastDeposit/apply per PO brief); effective only for client livePreview + previews (strict reuse of computeLiveAllocations; apply still sends pure depositAmount).
+  const lastDepositForCarry = data?.currentState?.lastDeposit || justApplied;
+  const carryAmount = lastDepositForCarry?.carryAmount ?? lastDepositForCarry?.remainder ?? 0;
+  const effectiveAmount = depositAmount + carryAmount;
+
+  // Live client preview (instant, delightful, no roundtrip). Reused compute exactly. Now passes effective (deposit + carry) for Remainder Carry-Forward previews.
   const livePreview = useMemo(() => {
-    return computeLiveAllocations(depositAmount, serverBuckets);
-  }, [depositAmount, serverBuckets]);
+    return computeLiveAllocations(effectiveAmount, serverBuckets);
+  }, [effectiveAmount, serverBuckets]);
 
   // Read-mostly Tree data for "My Buckets" (public version of staff hierarchy; current + this-deposit delta)
   // Brief 4: 2+ level hierarchies with live sub-bucket +$ deltas (reuse computeLiveAllocations from core + server parent/children data for structure); 'funded via parent' indicators + tree-node-nested-* / hierarchy-funding-* @e.
@@ -479,6 +487,11 @@ function App() {
             contributions flow via sub-levels
           </Tag>
         )}
+        {carryAmount > 0 && (
+          <Tag color="gold" style={{ marginTop: 6, fontSize: 10 }} data-e-ref="goal-carry-notice">
+            + carry-forward in live preview/goal impact
+          </Tag>
+        )}
 
         <div style={{ marginTop: 10, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <Button
@@ -587,6 +600,11 @@ function App() {
                 </Button>
               </Space>
               <div style={{ fontSize: 11, color: '#71717a', marginTop: 6 }}>Live client preview (instant). Server Simulate/Apply use real contracts (simulateDeposit / applyDeposit). Optimistic feel until commit.</div>
+              {carryAmount > 0 && (
+                <div style={{ fontSize: 10, color: '#fadb14', marginTop: 4 }} data-e-ref="effective-deposit-notice">
+                  Carry-Forward active: your input $${depositAmount} + $${carryAmount.toFixed(2)} carry = effective $${effectiveAmount.toFixed(2)} for this preview + goal impacts (livePreview recomputed via computeLiveAllocations).
+                </div>
+              )}
             </div>
 
             {/* Live results list (per ux: "Your deposit will automatically fund:" + small Progress + spill + narrative "cap in ~N") */}
@@ -663,6 +681,14 @@ function App() {
                 <strong style={{ color: '#52c41a' }}>${livePreview.totalAllocated.toFixed(2)}</strong>
               </div>
               <div style={{ fontSize: 12, color: '#71717a' }}>Remainder (unallocated this time): ${livePreview.remaining.toFixed(2)}</div>
+              {carryAmount > 0 && (
+                <div style={{ fontSize: 11, color: '#fadb14', marginTop: 2 }} data-e-ref="carry-notice-preview">
+                  + Carry-forward ${carryAmount.toFixed(2)} from prior remainder (effective deposit used in preview: ${effectiveAmount.toFixed(2)})
+                </div>
+              )}
+              {effectiveAmount !== depositAmount && (
+                <div style={{ fontSize: 10, color: '#bae637' }} data-e-ref="effective-amount">Effective amount (deposit + carry): ${effectiveAmount.toFixed(2)}</div>
+              )}
 
               {lastSim && <div style={{ marginTop: 6, fontSize: 11, color: '#4ade80' }}>Last server sim matched client: ${lastSim.totalAllocated.toFixed(2)} allocated.</div>}
             </div>
@@ -678,6 +704,10 @@ function App() {
                     ? `Applying $${depositAmount} now (optimistic preview — server confirming)...`
                     : `Last deposit applied: $${(lastDeposit?.amount ?? 0).toFixed(0)} (allocated $${(lastDeposit?.totalAllocated ?? 0).toFixed(0)}, remainder $${(lastDeposit?.remainder ?? 0).toFixed(0)})`}
                 </Typography.Text>
+                {carryAmount > 0 && (
+                  <Tag color="gold" style={{ marginLeft: 8, fontSize: 10 }} data-e-ref="last-carry-in">carry-in ${carryAmount.toFixed(2)}</Tag>
+                )}
+                {carryAmount > 0 && <Tag color="orange" style={{ fontSize: 10 }} data-e-ref="carry-notice">Remainder Carry-Forward</Tag>}
                 {(lastDeposit?.allocations?.length > 0 || (applying && optimisticAllocForApply)) && (
                   <List
                     size="small"
@@ -837,15 +867,24 @@ function App() {
             {lastDeposit && (
               <div style={{ marginTop: 10, paddingTop: 6, borderTop: '1px dashed #166534', fontSize: 11 }} data-e-ref="proj-last-deposit-cmp">
                 <Typography.Text type="secondary">Last deposit comparison (your last: ${lastDeposit.amount}, allocated ${lastDeposit.totalAllocated?.toFixed?.(0) ?? lastDeposit.totalAllocated}):</Typography.Text>
-                {[3, 6, 12].map((mo) => {
-                  const p = computeClientProjections(lastDeposit.amount, mo, serverBuckets);
-                  const g = p.finalTotal - currentTotalBalance;
+                {(() => {
+                  const lastCarry = lastDeposit.carryAmount ?? lastDeposit.remainder ?? 0;
+                  const lastEffectiveForCmp = (lastDeposit.amount || 0) + lastCarry;
                   return (
-                    <span key={mo} style={{ marginLeft: 6, fontSize: 10 }} data-e-ref={`proj-last-${mo}mo`}>
-                      {mo}mo ~${Math.round(p.finalTotal)} (+${Math.round(g)})
-                    </span>
+                    <>
+                      {lastCarry > 0 && <Tag color="gold" style={{ marginLeft: 6, fontSize: 10 }} data-e-ref="last-cmp-carry-notice">+ carry ${lastCarry.toFixed(2)} (effective ${lastEffectiveForCmp.toFixed(2)} for last)</Tag>}
+                      {[3, 6, 12].map((mo) => {
+                        const p = computeClientProjections(lastEffectiveForCmp, mo, serverBuckets);
+                        const g = p.finalTotal - currentTotalBalance;
+                        return (
+                          <span key={mo} style={{ marginLeft: 6, fontSize: 10 }} data-e-ref={`proj-last-${mo}mo`}>
+                            {mo}mo ~${Math.round(p.finalTotal)} (+${Math.round(g)})
+                          </span>
+                        );
+                      })}
+                    </>
                   );
-                })}
+                })()}
                 <div style={{ fontSize: 10, color: '#4ade80', marginTop: 2 }} data-e-ref="proj-goal-impact-summary">
                   Goal impact: {serverBuckets.filter((b: any) => (b.linkedGoalIds || []).length > 0).length} linked buckets will automatically receive % of every deposit in these projections (see My Goals cards for live projected saved).
                 </div>

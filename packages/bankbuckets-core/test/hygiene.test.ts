@@ -309,4 +309,24 @@ describe('bankbuckets-core hygiene cases (architect sugg 1: shared pure calc)', 
     expect(result.projectedBalances.g1).toBe(200);
     expect(result.projectedBalances.g2).toBe(150);
   });
+
+  it('carry-forward hygiene extension (IAEP Remainder Carry-Forward; reuses runHygieneTest + remainder-producing cases)', () => {
+    // Simple seed producing remainder (partial pct allocation leaves unplaced portion)
+    const seed: BucketState[] = [
+      { id: 'b1', name: 'OnlyHalf', percentAlloc: 0.5, maxAmount: null, spillOverOrder: 10, balance: 0, spillOverBucketUsed: null },
+    ];
+    const d1 = calculateDepositAllocation(1000, seed);
+    expect(d1.totalAllocated).toBe(500);
+    expect(d1.remainder).toBe(500);
+
+    // Carry the remainder forward into next user deposit (core calc reused unchanged; carry math in api layer)
+    const carry = d1.remainder;
+    const d2 = calculateDepositAllocation(200 + carry, seed); // effective toDistribute = user amount + prior rem
+    expect(d2.totalAllocated).toBe(350); // 0.5 * 700
+    expect(d2.remainder).toBe(350);
+    expect(Number.isFinite(d2.remainder)).toBe(true);
+
+    // Reuse runHygieneTest() exactly (covers main 20000 cap/spill + hierarchy + internal asserts, per task + persona)
+    expect(() => runHygieneTest()).not.toThrow();
+  });
 });

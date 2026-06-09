@@ -105,6 +105,7 @@ export const typeDefs = gql`
     allocations: [Allocation!]!
     totalAllocated: Float!
     remainder: Float!
+    carryAmount: Float!
   }
 
   type CurrentState {

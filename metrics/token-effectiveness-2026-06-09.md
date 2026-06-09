@@ -1,117 +1,102 @@
 # Token Effectiveness Summary
-**Generated:** 2026-06-09T01:03:00.000Z (updated by agent-evaluator checkpoint)
+**Generated:** 2026-06-09T04:45:47.257Z
 **Workspace:** /Volumes/files/src/agentPlayground
-**Cycle Focus:** muse-inspired BankBuckets long-term budgeting (MVP vertical: models/calc/GQL + staff antd live UI + real browser verification)
-**Latest Checkpoint:** 2026-06-09 fresh cheap post fa60af7 (public UI Epic-5: Next Paycheck Preview live + projections teaser + My Buckets Tree + My Goals grid + @e-refs + publish + resilient browser-verifier sub 019eaa0b-9a9f on public flows w/ new bv-public-*.png @e artifacts + hygiene PASSED; prior BankBuckets MVP + this public advance; this agent-evaluator run on deepseek-4-fast cheap tier, background)
 
-## Summary (This Cycle + Baseline)
-- **Distinct models seen (cycle subs):** grok-build (primary for delivery + public FE + verifier self), deepseek-v4-flash (prior muse)
-- **Sampled inference turns (recent unified):** 50+ (many more; post-Epic new turns on 019eaa0b/019eaa0f sids with 7k-38k+ ms)
-- **Total sampled model time (recent):** ~550k+ ms baseline + new public/verif: e.g. verifier ~333s wall /74 tools; recent inferences 7787ms,7391ms,... up to 38k+ ms on public scope subs
-- **Subagents analyzed (full ls + signals):** 20+ (incl. main 019ea8fa... now 8k+ msgs, key prior + new: 019eaa0f-4f90/4f8b public FE candidates grok-build 127/88 msgs, 019eaa0b-9a9f public post-Epic verifier 466 msgs/74 tools success, 019ea9f2 old re-verif)
-- **Major value slices completed this cycle:** ...prior BE/FE-staff/verif/fix/hygiene... + **public UI Epic-5 (Next Paycheck Preview live client+server+projections GQL, My Buckets/Goals + @e, publish) + resilient post-public browser-verifier (grok-4-fast, @e30+ coverage, new committed screenshots, hygiene+curl fallbacks, projections/calc confirmed)**; metrics + artifacts updated.
+## Summary
+- **Distinct models seen:** grok-build, deepseek-v4-flash
+- **Sampled inference turns:** 50
+- **Total sampled model time:** 990158 ms
+- **Subagents analyzed:** 59
 
-## Key Subagents - BankBuckets Cycle (from signals.json + summary.json + unified logs; exact matches to scope)
-| Subagent ID (short) | Role/Persona | Model | toolCallCount | contextTokensUsed | sessionDurationSeconds | errors | Notes / Value Delivered |
-|---------------------|--------------|-------|---------------|-------------------|------------------------|--------|-------------------------|
-| 019ea9da-1bb2-7fb1-82c9-e002ba262426 | back-end-developer | grok-build | 112 | 124811 | 517 | 6 | Completed: budget-models.ts (full Mongoose BankBuckets: Bucket/Goal/Deposit w/ percentAlloc, maxAmount, spillOver*, hierarchy, embeds), deposit-calculator.ts (portable pure calc w/ %/caps/spill waterfall - note runtime bug), schema + resolvers (configure/simulate/apply/projections). Title: "BankBuckets Budgeting: Mongoose Models Portable Calc GraphQL Extensions" |
-| 019ea9db-02c1-7e21-a484-0a15f663a65d | front-end-developer | grok-build | 121 | 120889 | 476 | 3 | Completed: apps/staff/src/App.tsx BankBuckets UI slice (antd Card/Tree/Progress/Slider/InputNumber/List/Tag + data-e-ref everywhere, live client computeLiveAllocations preview, GQL apply/save, % validation, hierarchy viz, goals). "Staff UI: Hierarchical Buckets Config + Live Deposit Simulation". Complex antd+Apollo+state on tier. |
-| 019ea9db-02c1-7e21-a484-0a222a291357 | browser-verifier | grok-build | 80 | 99869 | 411 | 0 | Completed: followed verify-ui-with-browser skill exactly (agent-browser open staff/public.localhost, snapshot -i @e, actions, re-snap). /tmp pngs (staff-current 3k, annotated baselines). Ground truth: "shell render but flows not exercisable due to api crash" + "no" for BankBuckets e2e (apply, live post-mut etc). Title mentions messages but scoped to new feature verification. Actionable repro + handoff to fix. |
-| 019ea9e5-2d7f-7201-9268-78274fd63cc2 | back-end fix (descaled junior) | grok-build | (completed post-cycle) | (signals from prior) | (ongoing ~120 msgs) | - | Post-verifier descale. Delivered hygiene guards in deposit-calculator.ts (NaN/undef + evaluator req), exported runHygieneTest() with realistic 4-bucket seed + 20000 high-deposit case. Enabled PASSED verification. |
-| 019ea9f2-f6f2-7ab0-bc6c-342b412b4278 | browser-verifier (re-verif) | grok-build | 34 | (est 40k-60k ctx) | ~79 | (cancelled) | Cancelled on doom loop/repeated errors after ~79s — env/harness dev server timeouts (repeated ~60s kills, exit 143). Followed verify skill + resilience fallback patterns but env blocked full interactive @e. Delivered critical data point for orchestrator pre-provision + env resilience refinements. (No full @e screenshots this run.) |
-| 019eaa0f-4f90-7a53-b786-2ceefa179792 | front-end-developer (public Epic-5) | grok-build | 127 msgs (signals n/a in parse) | (pattern ~100k+ ctx) | recent | - | Completed: apps/public/src/App.tsx Epic-5 (Next Paycheck Preview w/ live compute + server sim/apply + GET_PROJECTIONS teaser, My Buckets antd Tree + live deltas, My Goals grid + link modal + optimistic, dense data-e-refs e.g. next-paycheck-preview/preview-*/my-goals-card/projections-teaser, Epic-5 badge, full reuse staff patterns/GQL/compute). Published in fa60af7. "Public motivational BankBuckets views (Epic-5)". |
-| 019eaa0f-4f8b-71e1-94de-916ceedcd8a7 | (public FE / related) | grok-build | 88 msgs | (est) | recent | - | Supporting public UI slice / gql / projections integration work (post staff FE). |
-| 019eaa0b-9a9f-7690-b300-2f4e708dce02 | browser-verifier (public post-Epic-5, grok-4-fast) | grok-build (self-desc grok-4-fast) | 74 tools (466 msgs) | high | ~333s (5.5min) | 0 success | **Completed resilient post-public-UI verification for BankBuckets Epic-5 views (public app).** agent-browser open (direct fallback), snapshot -i (@e19+ deposit/slider/chips/sim/apply/refresh/proj up to @e39 post seed), fill @e37 20000, clicks @e27/@e28, re-snaps + text extracts for list/tree/goals. New screenshots: bv-public-initial.png / highdeposit-live.png (live cap/spill deltas exact: Emergency 5000 MAX, Vacation 8000 etc matching compute/hygiene) / post-apply.png committed. Hygiene re-run **PASSED** (20000/0, caps/spill). Projections/apply/calc flows ground-truth via @e + client preview + curls. Used bg run_terminal/monitor/get_output/pkill/direct-port + hygiene fallback (no doom, per AGENTS). Running verifier procs + new @e artifacts. |
-| 019ea9e5-c158-7182-8106-9d97e10d01a6 | (condensed) muse/performance review | grok-build | (no signals yet; active) | - | ~73 msgs /25 chat | - | "BankBuckets Cycle Performance Review Muse Verifier Efficiency" - using condensed spawn. Active. |
-| 019ea9e5-c150-7ac2-8118-b0047df67704 / afff... | (condensed) muse / muse-eyes | deepseek-v4-flash | (no signals) | - | 0 msgs /4 chat each; ~3s life | - | Spawned with "Act exactly as the muse persona defined in the file" (improvement); quick 0-progress ends (still issues). |
-| 019ea9e4-7608-7cf3-8736-* (examples) | (prior full-embed) muse attempts | deepseek-v4-flash | 0 | - | ~3s life | - | "You are the muse persona (deepseek-4-pro, high reasoning; full core" in title/summary. Cancelled (unified: "subagent failed", turns:1, tool_calls:0, cancelled:true). Multiple similar. |
-| 019ea8fa-8d7e-7882-9ab1-01562cfd1f3f (main) | orchestrator (long-running) | grok-build | 1433 (total) | 398888 (peak ctx, 4 compactions, 1.69M pre) | 15030 (~4h) | 54 (incl kills) | Coordinated all; used spawn/kill/wait/todo_write heavily. Subagent links in its dir. High overhead but enabled parallel + descale. |
+## Subagents (Tier Breakdown)
+| Subagent ID | Model | Messages |
+|-------------|-------|----------|
+| 019ea8fa-8d7e-7882-9ab1-01562cfd1f3f | grok-build | 10762 |
+| 019ea9d4-e516-7010-9a7f-e7910428d692 | deepseek-v4-flash | N/A |
+| 019ea9d4-e516-7010-9a7f-e7a5f8d81d36 | grok-build | 114 |
+| 019ea9d6-d93a-7301-80b2-306040241842 | grok-build | 164 |
+| 019ea9d7-81bc-7ed3-9fe5-88943a2d54b9 | grok-build | 159 |
+| 019ea9d8-2bfd-7631-937c-c003aeb6c7b0 | deepseek-v4-flash | N/A |
+| 019ea9da-1bb1-7ad0-bfbb-3ff0d8027003 | grok-build | 152 |
+| 019ea9da-1bb2-7fb1-82c9-e002ba262426 | grok-build | 537 |
+| 019ea9da-668f-7892-b432-8ddd83639463 | deepseek-v4-flash | N/A |
+| 019ea9db-02c0-7d70-bef8-60508caa87de | grok-build | 194 |
+| 019ea9db-02c1-7e21-a484-0a15f663a65d | grok-build | 569 |
+| 019ea9db-02c1-7e21-a484-0a222a291357 | grok-build | 1073 |
+| 019ea9db-02c1-7e21-a484-0a3c0d581be0 | grok-build | 156 |
+| 019ea9e4-7608-7cf3-8736-3cf2bd523f85 | deepseek-v4-flash | N/A |
+| 019ea9e4-7608-7cf3-8736-3d0a286ae10c | deepseek-v4-flash | N/A |
+| 019ea9e5-2d7f-7201-9268-78274fd63cc2 | grok-build | 159 |
+| 019ea9e5-c150-7ac2-8118-afff438074da | deepseek-v4-flash | N/A |
+| 019ea9e5-c150-7ac2-8118-b0047df67704 | deepseek-v4-flash | N/A |
+| 019ea9e5-c158-7182-8106-9d97e10d01a6 | grok-build | 169 |
+| 019ea9e8-5b50-7b92-8055-ca98c033a715 | grok-build | 424 |
+| 019ea9f0-17c0-78d0-9fbf-5da3ae3256c5 | grok-build | 150 |
+| 019ea9f2-f6f2-7ab0-bc6c-342b412b4278 | grok-build | 133 |
+| 019eaa07-b2b7-71e3-be11-2e00a27cef22 | grok-build | 235 |
+| 019eaa07-b2b7-71e3-be11-2e1c88d9e7cc | grok-build | 196 |
+| 019eaa0b-9a9f-7690-b300-2f4e708dce02 | grok-build | 466 |
+| 019eaa0f-4f8b-71e1-94de-916ceedcd8a7 | grok-build | 222 |
+| 019eaa0f-4f90-7a53-b786-2ceefa179792 | grok-build | 181 |
+| 019eaa15-10ab-75f1-93c9-30a96e874e5c | grok-build | 39 |
+| 019eaa29-e7c8-7e60-90d1-4026c1efb54c | grok-build | 94 |
+| 019eaa29-e7c8-7e60-90d1-403a9f720ea9 | grok-build | 85 |
+| 019eaa2a-28fc-7043-b4cb-5ad51f4ec9e4 | grok-build | 91 |
+| 019eaa2d-23a2-7f81-b41b-8684546034e2 | grok-build | 117 |
+| 019eaa2d-23a2-7f81-b41b-86957dae4a6d | grok-build | 122 |
+| 019eaa2d-23a3-7ee2-aa7b-0a8d5a36f011 | grok-build | 271 |
+| 019eaa30-7c5f-7122-8226-81bc9e1999ef | grok-build | 97 |
+| 019eaa33-8fd6-7521-880c-1e75055827d1 | grok-build | 159 |
+| 019eaa33-8fd6-7521-880c-1e82c8564bdb | grok-build | 155 |
+| 019eaa3e-b561-7aa3-b2fd-40053a06e35b | grok-build | 57 |
+| 019eaa3e-b561-7aa3-b2fd-4013b1629bf7 | grok-build | 76 |
+| 019eaa3e-b561-7aa3-b2fd-402bc4ab80f8 | grok-build | 141 |
+| 019eaa41-d9a3-74f1-a4c6-3a69a6343a82 | grok-build | 144 |
+| 019eaa41-d9a4-7442-8f94-d9688e736312 | grok-build | 119 |
+| 019eaa47-7730-7840-8a93-74a96f7d0137 | grok-build | 136 |
+| 019eaa4b-d936-7c93-955b-e6c51b53965c | grok-build | 102 |
+| 019eaa4b-d937-7ac0-b325-4d017cb17fb0 | grok-build | 144 |
+| 019eaa4e-cda4-71c0-a3ad-6391ae4a3be4 | grok-build | 235 |
+| 019eaa50-81fa-7083-87fe-d1ce635f8daa | grok-build | 123 |
+| 019eaa50-81fa-7083-87fe-d1d54a1a5d59 | grok-build | 250 |
+| 019eaa5c-6a78-7fb0-882c-c7a2f5c0f892 | grok-build | 112 |
+| 019eaa5c-6a79-7082-9acd-03da9acb2bcd | grok-build | 209 |
+| 019eaaa8-8907-7230-b85a-cfb6bda9f0f2 | grok-build | 166 |
+| 019eaaab-a97f-7060-9703-bbbe8f4f525e | grok-build | 84 |
+| 019eaaab-a97f-7060-9703-bbc268a48bf5 | grok-build | 130 |
+| 019eaaae-6242-7ef1-8efe-6ece37910df5 | grok-build | 186 |
+| 019eaaae-6242-7ef1-8efe-6edf80af15dc | grok-build | 127 |
+| 019eaab2-92db-7d30-8ada-3f88034cb562 | grok-build | 69 |
+| 019eaab2-92db-7d30-8ada-3f9ae2ff1097 | grok-build | 49 |
+| 019eaab2-cf0b-7593-a3ae-fae5cacc5b8b | grok-build | 38 |
+| 019eaab2-cf0b-7593-a3ae-faf921645f58 | grok-build | 39 |
 
-(Additional earlier 019ea9d* : ux-designer/architect/product-owner etc on grok-build, 150-190 msgs each, prior to core impl.)
+## Recent Inference Timing (model_elapsed_ms samples)
+(Lower times = cheaper/faster models doing the work)
+| Timestamp | Model Time (ms) |
+|-----------|-----------------|
+| 2026-06-09T04:45:08.161Z | 16683 |
+| 2026-06-09T04:45:11.699Z | 3534 |
+| 2026-06-09T04:45:17.775Z | 10920 |
+| 2026-06-09T04:45:19.613Z | 12906 |
+| 2026-06-09T04:45:25.575Z | 13871 |
+| 2026-06-09T04:45:33.396Z | 7334 |
+| 2026-06-09T04:45:41.621Z | 8189 |
+| 2026-06-09T04:45:41.732Z | 33259 |
+| 2026-06-09T04:45:45.512Z | 25892 |
+| 2026-06-09T04:45:46.699Z | 28526 |
 
-## Recent Inference Timing Samples (unified.jsonl inference_done for cycle sids; lower = cheaper)
-Includes fix sub: 23835ms, 15119ms, 5467ms, 3906ms, 2715ms etc. Main + others mixed 16k-19k ms turns. Many build_request 0ms.
+## Public @e & Resilience (auto-captured — cheap, first-class metrics)
+- **Public @e coverage (source):** 62 instances (40 unique, 7 Brief6+: proj-per-bucket-*, goal-impact-over-time-*, interactive-horizon-*, etc.) in apps/public/src/App.tsx
+- **Public browser @e artifacts:** 6 bv-public-*.png committed. Recent: bv-public-initial.png, bv-public-post-apply.png, bv-public-verifier-fallback.png
+- **Guardian health (from health.json):** public-epic5 (checks: 1, restarts: 1)
+- **Hygiene / core test status:** check output
+- Note: For live @eN exercised in a specific verifier run, the evaluator should still grep the sub's terminal logs for '@e[0-9]*'. This auto-capture removes the repeated manual greps/ls/cat/test calls from every review.
 
-## Core Metrics Computed (per analyze-agent-performance SKILL.md + persona)
-- **Token / model time per value (completed todos/slices):** BE + FE + verifier ~313 tool calls, ~345k ctx tokens, ~1.4k s wall for 3 major delivered slices (full BankBuckets domain+portable engine+GraphQL + production-grade antd UI w/ live + @e + real verif data). ~100-120k ctx + ~100 tools per vertical slice. Main orchestrator overhead high (1.6M tokens, 1433 tools) due to long cycle + multiple handoffs. Good "per completed todo" density for first BankBuckets MVP (models/calc/UI/verif as value units). Client FE calc separate from (buggy) server one. **Hygiene test (this checkpoint):** near-zero token cost (single terminal exec of runHygieneTest via bun -e on deposit-calculator) for high-value confirmation of portable calc on realistic 4-bucket BankBuckets seed + 20000 high-deposit case (exact repro scenario from prior @e verifier). PASSED: totalAllocated=20000, remainder=0, Emergency capped at 5000 (true), Vacation received spill alloc 8000. Exemplar cheap high-signal verification.
-- **Escalation / descale success rate:** Strong on delivery: FE (complex antd+Apollo+live state) succeeded on its tier without further escalate. Descaling to fresh cheap junior fix sub after verifier discovery: succeeded (classic good handoff; orchestrator clean summary + todo; junior delivered NaN guards + exported runHygieneTest enabling PASSED). Prior escalations for muse vision: attempted on deepseek but failed (see pattern). % success high for impl work; muse ones low due to prompt issues (now mitigated). "junior → ... → descale to new junior" cheaper than prolonged high-tier. Re-verif sub (34 tools) showed env limit not logic failure.
-- **Tier utilization:** Delivery (BE/FE/verif/fix) 100% on grok-build (the effective model for complex scoped work in this run; matched query "junior ... deepseek-4-fast" framing but actual grok-build handled volume successfully). deepseek-v4-flash used only for muse/eyes attempts (cheap tier for "ideation" but wasted). Goal (max cheap volume) partially met for impl; muse pattern inverted the intent. Main on grok-build. High ctx usage even on "cheap" (~100k+ per sub from persona+code embeds). **Note:** hygiene confirmation performed at near-zero cost (terminal direct, cheap tier or evaluator fallback) vs full subagent.
-- **Browser / actual functionality pass rate (ground truth gold):** 0% for critical BankBuckets e2e flows (configure buckets, deposit apply exercising spillover/caps/allocs, live preview post-mutation update, projections). Verifier: "pages shell render" (screenshots: current 3k minimal vs 35k annotated baseline) but "no" — due to api crash on calc path. Non-BankBuckets messages demo baseline may have partial. Huge win over assumption/code review/screenshots alone. **Cycle close update:** Full interactive e2e blocked in re-verif sub (34 tools / ~79s cancelled on repeated env errors); however, BankBuckets calc/apply functionality *verified* via: (a) direct terminal hygiene test PASSED on exact 4-bucket 20000 high-deposit case (cap+spill as expected), (b) portable calc reused in staff UI live client preview (data-e-refs present), (c) GraphQL resolvers + models paths, (d) prior verifier @e repro + committed screenshots (bv-staff-*.png). Huge win over assumption/code review/screenshots alone. Browser capability proven in client preview; e2e partial due to env (tracked as resilience metric).
-- **Handoff quality + productivity signals:** Session titles excellent (e.g. exact scope). Sub plan.json empty (todos via live todo_write in orchestrator + per-role). Verifier output directly actionable (crash title matched fix spawn; repro drove hygiene guards + test). Re-verif failure directly actionable for orchestrator pre-provision + fallback strengthening. Stuck reports high for full-embed muses (quantified in prior checkpoints; spawn condense hygiene now applied + in AGENTS.md). 54 errors in main largely from kills. Real outcomes: code shipped (models+UI + hygiene), bug discovered early via ground truth, calc correctness confirmed cheaply post-fix, cycle closed.
-- **Cost per slice / overall:** High due to persona bloat (even "cheap" subs 100k+ ctx), tool-heavy (100+ calls for real changes), long main session. But high value: real portable BankBuckets engine + interactive UI + verification data enabling fix. Vs "always high tier": using tiered + descale + juniors for FE/BE saved; kills limited waste. **Hygiene verification:** near-zero cost for confirmation value (PASSED on repro case). Re-verif: 34 tools as explicit waste data point for env/harness refinements (pre-provision monitors, stronger fallbacks). Self-analysis cheap (this eval on deepseek-4-fast). Refinements applied this cycle (spawn condense, BE hygiene, browser-verifier resilience) already reducing stuck patterns and providing fallback value.
+## Interpretation (for self-improvement)
+- High volume of low-ms turns on deepseek-4-fast indicates successful use of juniors.
+- Descaling after grok-4-* work should show subsequent cheap subagents handling follow-ups.
+- Run this periodically via agent-evaluator to track shifts in tier utilization and cost per value.
+- Public @e coverage + hygiene passes are high-signal, low-token ground truth for "did the BankBuckets motivational UI + calc actually work for a user?".
 
-## Interpretation + Trends (for self-improvement)
-- High tool counts + ctx per slice for first vertical but strong delivery on the tier used for BE/FE (complex real work). Descaling worked for the integration bug (hygiene now in place + PASSED).
-- Recurring waste pattern identified + data-backed (see below): 0-tool high-ctx muse embeds (addressed by condense hygiene in AGENTS.md); dev server ~60s kills causing verifier doom loops (34 tools / ~79s re-verif cancelled; resilience fallback now documented + hygiene provides value).
-- "Actual working for a user" (verifier @e + pass/fail) is the highest signal — use to weight all "done" claims. Hygiene terminal PASSED + client preview + prior repro now provide ground truth for calc even when full browser e2e env-blocked.
-- Run periodically (as here) + commit metrics + screenshots. Trends will show cheaper/better after refinements. This checkpoint closes the BankBuckets MVP cycle self-improvement loop.
-
-## BankBuckets MVP Cycle Close Checkpoint (this agent-evaluator run, deepseek-4-fast cheap/background)
-Incorporating just-closed cycle + latest re-verif sub failure (019ea9f2-f6f2-7ab0-bc6c-342b412b4278: 34 tools, cancelled on doom loop/repeated errors after ~79s — env/harness dev server timeouts) + the direct hygiene test success (PASSED on realistic 4-bucket BankBuckets seed + 20000 high-deposit case via terminal, low token cost).
-
-**Value delivered (unified/signals/summary from sessions + main + cycle subs: BE foundation, FE staff UI, prior verifier @e gold, fix sub hygiene execution, this cancelled re-verif, orchestrator coordination):**
-- Models + portable calc (hygiene now in place + PASSED via cheap terminal).
-- Staff antd UI + @e refs everywhere (data-e-ref on deposit-control, bucket-config-panel, apply etc.).
-- Real browser repro (prior verifier sub) that drove precise fix (NaN guards, test export in deposit-calculator.ts matching @e30 high-deposit setup).
-- Refinements applied (spawn condense hygiene, BE hygiene guards per evaluator req, browser-verifier resilience/anti-doom-loop protocol with explicit fallback text).
-- Metrics committed (this update), artifacts (screenshots/ bv-staff-*.png from prior verifier, hygiene evidence in code + terminal run output).
-- Cycle closed: portable BankBuckets %/caps/spill verified on repro case at near-zero added cost.
-
-**Waste quantified:**
-- Re-verif 34 tools on cancelled (repeated server errors due to ~60s dev kills, exit 143; doom loop after ~79s).
-- Prior muse stuck attempts (0-tool high-ctx from embeds, multiple short ~3s cancelled lives, turn-1 no tools).
-- Dev server timeouts causing loops (harness reality).
-
-**Metrics (tokens/value, tier, escalation/descale, browser):**
-- Tokens/value: hygiene test here was near-zero cost for confirmation value (terminal bun -e runHygieneTest on exact seed; PASSED output captured). Vs re-verif waste (34 tools for env data only). Overall per slice high but first MVP vertical strong density.
-- Tier: delivery on grok-build effective (complex work, fix sub), juniors framed but worked for BE/FE; hygiene cheap direct (terminal/evaluator fallback); deepseek for some ideation/muse (wasted on stucks, mitigated).
-- Escalation/descale: descaling to junior fix succeeded (post prior verifier; led to hygiene in place + PASSED). Re-verif on (assumed similar) tier failed on env not impl.
-- Browser capability: client preview proven in prior @e run (screenshots committed); full e2e partial due to env (re-verif data point) but calc/apply behavior verified via test + prior repro + UI live preview + GQL paths. @e refs in staff UI provide ongoing hooks.
-
-See full analysis in this agent-evaluator checkpoint report (metrics/*.md updated as part of work; parallel to screenshots/ commit). This closes the self-improvement loop for the cycle. **Post-public re-measure completed in this fresh checkpoint (after fa60af7 Epic-5 publish)**: public UI + projections + @e verif now incorporated (see new section below). Next cycle: re-measure after further public flows, descaling on verif follow-ups, or resilience improvements (e.g. pre-provision monitors + auto @e count in analyzer).
-
-*This report is generated/updated as part of the work being accomplished (by agent-evaluator via analyze-agent-performance skill procedures) and committed for visibility (parallel to screenshots). Script equivalent analysis performed (direct jq/grep on ~/.grok/logs/unified.jsonl + sessions/%2FVolumes.../summary+signals + sub updates/terminal logs; screenshots read for @e; hygiene via verif report + bun fallback; no full history load for cheap). Committed latest-token-effectiveness.md + dated + new public @e artifacts + sub IDs (019eaa0f* public FE, 019eaa0b verifier) as primary context (logs outside ws boundary per scope).*
-
-## Post Public UI Epic-5 + fa60af7 Publish Checkpoint (fresh cheap agent-evaluator, deepseek-4-fast; post commit fa60af7 + publish + running verifier)
-
-**Value delivered (unified/signals/summary from recent sids + public front-end sub 019eaa0f-4f90-7a53-b786-2ceefa179792 + verifier 019eaa0b-9a9f-7690-b300-2f4e708dce02 + main 019ea8fa... + prior):**
-- Public UI Epic-5: full "Public Portal — My Future Buckets" (Vite+antd green) with **Next Paycheck Preview** (prominent live client computeLiveAllocations + InputNumber/Slider/quickChips + Simulate/Apply GQL + instant preview list w/ Progress/spill Tags/capped narratives "cap in ~N" + current→projected), **My Buckets** (read-mostly antd Tree hierarchy + % large Tags + Progress + live +$ deltas + linked goals), **My Goals** (responsive grid hover Cards w/ Avatar + target Progress + community Tags "1,234 savers" + "Link one of my buckets" + optimistic local modal), **N-paycheck projections teaser** (real GET_PROJECTIONS GQL + chips 3/6/12 + finalProjectedTotal + periods list). Dense `data-e-ref` everywhere (next-paycheck-preview, preview-deposit-*, my-buckets-card, bucket-tree-public, my-goals-card, goal-card-*, projections-teaser, link-*, quick-chip-*, proj-chip-* etc). "Epic-5 views" badge. Aggressive composition/reuse (exact staff GQL contracts + compute fn + antd patterns, no duplication). 
-- Publish: fa60af7 included apps/public/src/App.tsx (+659 LOC) + gql updates + dist build + metrics/AGENTS updates + public baseline screenshot.
-- Resilient post-public browser-verifier (running during analysis; procs + monitors visible): 74 tools, success, grok-4-fast self, followed verify-ui-with-browser + persona + AGENTS exactly (bg launches, persistent monitor health curls, pkill, direct-port fallback after repeated portless fails, hygiene+curl on 2+). Open public, snapshot -i (discovered @e19 deposit etc; post-seed @e3 treeitems, e4-6 goals, e37 20000, e27/28 sim/apply, up to @e39; 30+ @e exercised). High-deposit 20000 live: tree + "Your deposit will automatically fund:" list deltas exact (Emergency 5000 MAX cap spill $3000, Vacation 8000 "filling fast — cap in ~2", etc matching compute + prior @e repro). New screenshots committed: bv-public-initial.png, bv-public-highdeposit-live.png (live cap/spill), bv-public-post-apply.png (with @e). Hygiene re-run **PASSED** (20000/0, caps/spill). Projections/apply/calc flows verified via @e + client preview + curls (api 200 observed in monitor). No doom loops; harness reality explicitly handled + evidence delivered. "is it really working for a user?": YES for public preview/high-deposit/projections teaser flows.
-- Projections work ready (UI queries + renders; backend resolver present per schema grep; verif curls confirmed endpoint).
-- New public @e coverage + screenshots/ as ground truth artifacts (parallel to prior staff bv-*.png).
-
-**Waste quantified (this public slice):**
-- Minimal. Verifier 74 tools but full success + rich @e/hygiene evidence (vs old re-verif 34 tools cancelled waste). Harness ~60s kills caused some post-apply error banners + render timing in snaps (client preview + text extracts + hygiene still delivered value). No repeated re-verif or stuck. Orchestrator/main high cumulative msgs (8118) is coordination cost across cycle incl. public. Prior patterns (muse 0-tool) not observed here.
-
-**Metrics (tokens/value, tier, escalation/descale, browser) post-public:**
-- Tokens/value: Public Epic-5 + verif added strong density (public FE sub ~127 msgs delivered full vertical UI+projections+@e; verifier 74 tools + hygiene near-zero added cost for confirmation). Overall per slice still tool/ctx heavy on grok-build but first public + projections verified at browser level cheaply via fallbacks. Hygiene PASSED exemplar (bun -e / verif report, matches 20000 repro from prior @e).
-- Tier/utilization: Public FE subs (019eaa0f-4f90/4f8b) + main on grok-build (effective for complex scoped delivery). Verifier sub self "grok-4-fast" (matches senior tier for verif per persona/AGENTS escalation; 74 tools on capable model for @e fidelity). Recent unified ms samples (7k-38k) consistent; cheap fallbacks (terminal hygiene, client preview, curls) for confirmation volume. Goal (max cheap) advanced by direct + hygiene vs full sub every time.
-- Escalation/descale: Public work succeeded on grok-build tier (no further escalate needed for FE). Verif explicitly on grok-4-fast (good use of senior for ground-truth). Descaling patterns from prior (junior fix post verif) carried; new public verif fed directly to this cheap evaluator.
-- Browser capability from @e/hygiene: **Strong pass for public Epic-5**. @e-driven verification (open/snapshot-i/fill/click/re-snap/text) on live public: deposit controls, high-20000 live preview (exact allocs/spill/caps/narratives/Progress in tree + list), goals grid, projections UI, apply/sim. Screenshots show @e1-39 coverage. Hygiene PASSED (fallback when servers killed). Running verifier (agent-browser + chrome headless + monitors) + committed bv-public-*.png provide ground truth beyond code/screenshots. Client preview + GQL + calc all aligned. (Per harness note: used bg/monitor/poll/pkill/direct + hygiene/curl; explicit env limitation reported in verif output but full evidence still delivered.)
-
-**Interpretation + Trends (for self-improvement, post-public):**
-- Public UI Epic-5 delivered cleanly on tier + verified with @e + hygiene at low added waste (resilience paid off; no re-verif doom). Verifier on grok-4-fast + explicit "resilient post-public-UI" title shows good tier use for high-signal browser work. New @e density in public App.tsx (data-e-ref on every control/card) enabled precise verification. Projections teaser + live preview provide motivational "set and forget" value now browser-proven. Trends: after staff + public verticals, hygiene + client fallbacks + @e are highest-ROI cheap signals; continue weighting them in evaluator. Commit metrics/screenshots as part of work (done).
-
-**1-2 Concrete Refinements Proposed (measurable, low-risk, targeted; for orchestrator review/apply):**
-1. **Codify public UI verif tier + scope**: Update `.grok/personas/browser-verifier.toml` (and portable agents/personas/browser-verifier.md + verify-ui-with-browser skill) + orchestrator guidance: "For any public UI / projections / Epic-5+ scopes, always request/spawn on grok-4-fast (or higher) explicitly for @e fidelity on live previews + GQL flows; include 'public' in title and use resilient fallback patterns + hygiene/curl. Measure impact next cycle via (a) public @e pass rate in evaluator report, (b) token delta vs mixed-tier verif." (Already observed here successfully; prevents accidental junior on verif.)
-2. **Auto-capture public @e + hygiene in analyzer**: Extend `scripts/analyze-agent-logs.ts` (and evaluator procedures) to: after unified/signals parse, `ls -lt screenshots/bv-public-*.png /tmp/bv-public-*.png 2>/dev/null | head -3`, `grep -o '@e[0-9]*' ~/.grok/sessions/.../<verifier-sid>/terminal/*.log | sort | uniq | wc -l` (or from updates), and include in generated md: "**Public browser @e coverage:** X unique @e exercised (Y screenshots); hygiene passes: N (last: 20000 case)". Add to Core Metrics + tier section. Re-run post next public slice + compare vs this baseline (expect higher coverage, lower waste). Low risk (grep only); directly improves "browser capability" metric visibility.
-
-See full analysis... (above). This checkpoint closes the public Epic-5 self-improvement loop.
-
-## Credits (Team Contributions)
-- **back-end-developer**: Foundation models + portable calc + GQL (112 tools, delivered structure + projections resolver).
-- **front-end-developer (staff)**: Full staff antd live UI + @e (121 tools, complex successful on tier; patterns reused).
-- **public front-end sub (019eaa0f-4f90-7a53-b786-2ceefa179792 + 019eaa0f-4f8b-71e1-94de-916ceedcd8a7 on grok-build)**: Epic-5 public UI delivery (Next Paycheck live + projections + goals + tree + @e-refs + publish in fa60af7). Reused composition, antd+Tailwind, motivational public views.
-- **browser-verifier (prior staff + new 019eaa0b-9a9f-7690-b300-2f4e708dce02 grok-4-fast)**: Real ground-truth + @e repro (staff) + **resilient post-public-UI verification** (74 tools success, new bv-public-*.png @e1-39, hygiene PASSED on public high-deposit, projections/flows confirmed, monitors/bg used, no doom). Followed skill/persona/AGENTS precisely.
-- **fix back-end (descaled junior)**: Post-verifier integration fix (hygiene guards + runHygieneTest export); enabled cheap PASSED verification on 4-bucket 20000 case (reused in public verif).
-- **orchestrator (019ea8fa...)**: Coordination, spawn for public FE + verif, publish commit fa60af7 (public + metrics + AGENTS), descaling, condensed prompts, scheduling verif + this eval, todo management. Enabled the Epic-5 + this fresh checkpoint.
-- **ux-designer / product-owner / architect (prior)**: Wireframes, vision briefs, maintainability guidance (reused in public).
-- **muse / muse-eyes**: BankBuckets methodology inspiration (exclusive source access); prompt hygiene improvements helped.
-- **prior agent-evaluator**: Previous checkpoints + proposals (spawn condense, BE hygiene, browser resilience) applied; enabled this low-waste public verif + metrics.
-- **agent-evaluator (self, this run)**: Fresh cheap checkpoint post-public (direct log parse + sub reads + screenshot @e + hygiene equiv + script equiv). Updated metrics/*.md (latest + dated), credits public front-end sub + team, proposed 1-2 refinements, committed artifacts. Low cost.
-
-Prior reports (generic) preserved below for trend baseline.
-
-## Note: Fresh Cheap Baseline Checkpoint Started (75min BankBuckets Analysis Test)
-Baseline established 2026-06-08 (post this historical 2026-06-09 cycle close). See /Volumes/files/src/agentPlayground/metrics/latest-token-effectiveness.md (new appended section) for full scope, dev:agent guardian status (ports 200 live, script details), public/staff code state snapshot, tier expectations, and the 2 measurable goals (descaling success; public @e coverage + hygiene). This dated file left as historical snapshot; latest carries forward the self-improvement tracking. No other changes.
+*This report is generated as part of the work being accomplished and committed for visibility (parallel to screenshots).*

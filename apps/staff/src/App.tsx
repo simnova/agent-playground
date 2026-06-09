@@ -55,6 +55,7 @@ const GET_CURRENT_STATE = gql(`
         amount
         totalAllocated
         remainder
+        carryAmount
         allocations {
           bucketId
           bucketName
@@ -89,6 +90,7 @@ const APPLY_DEPOSIT = gql(`
       amount
       totalAllocated
       remainder
+      carryAmount
       allocations {
         bucketId
         bucketName
@@ -166,10 +168,15 @@ function App() {
 
   const goals: any[] = data?.currentState?.goals || [];
 
-  // Live preview computation (state-driven, client portable calc — delightful & fast). Adapted to schema names.
+  // Carry-forward (IAEP): from extended lastDeposit/apply (carryAmount surfaced); effective only affects client livePreview/computeLiveAllocations calls + notices (strict reuse; apply sends depositAmount only).
+  const lastDeposit = data?.currentState?.lastDeposit;
+  const carryAmount = lastDeposit?.carryAmount ?? lastDeposit?.remainder ?? 0;
+  const effectiveAmount = depositAmount + carryAmount;
+
+  // Live preview computation (state-driven, client portable calc — delightful & fast). Adapted to schema names. Now uses effective for Remainder Carry-Forward.
   const livePreview = useMemo(() => {
-    return computeLiveAllocations(depositAmount, editedBuckets.length ? editedBuckets : serverBuckets);
-  }, [depositAmount, editedBuckets, serverBuckets]);
+    return computeLiveAllocations(effectiveAmount, editedBuckets.length ? editedBuckets : serverBuckets);
+  }, [effectiveAmount, editedBuckets, serverBuckets]);
 
   // Current total % for validation (must ~100)
   const currentTotalPercent = useMemo(() => {
@@ -511,6 +518,11 @@ function App() {
             goal contributions flow through levels
           </Tag>
         )}
+        {carryAmount > 0 && (
+          <Tag color="gold" style={{ marginTop: 4, fontSize: 10 }} data-e-ref="staff-goal-carry-notice">
+            carry-forward applied to live goal impact
+          </Tag>
+        )}
       </Card>
     );
   };
@@ -661,6 +673,9 @@ function App() {
                 <Typography.Title level={5} style={{ marginTop: 16, color: '#a1a1aa' }}>
                   Live Deposit Preview → ${depositAmount}
                 </Typography.Title>
+                {carryAmount > 0 && (
+                  <Tag color="gold" style={{ marginBottom: 4, fontSize: 10 }} data-e-ref="staff-preview-carry-tag">+ carry ${carryAmount.toFixed(2)} → effective ${effectiveAmount.toFixed(2)}</Tag>
+                )}
                 <Card size="small" style={{ background: '#0a0a0b' }} data-e-ref="live-sim-results">
                   <List
                     size="small"
@@ -708,6 +723,15 @@ function App() {
                     <strong style={{ color: '#52c41a' }}>${livePreview.totalAllocated.toFixed(2)}</strong>
                   </div>
                   <div style={{ fontSize: 12, color: '#71717a' }}>Remaining (unallocated): ${livePreview.remaining.toFixed(2)}</div>
+                  {carryAmount > 0 && (
+                    <Tag color="gold" style={{ marginTop: 4, fontSize: 10 }} data-e-ref="staff-carry-notice">+ Carry ${carryAmount.toFixed(2)} (effective ${effectiveAmount.toFixed(2)})</Tag>
+                  )}
+                  {effectiveAmount !== depositAmount && (
+                    <div style={{ fontSize: 10, color: '#bae637', marginTop: 2 }} data-e-ref="staff-effective-amount">Effective (deposit + carry) for this live preview: ${effectiveAmount.toFixed(2)}</div>
+                  )}
+                  {lastDeposit && carryAmount > 0 && (
+                    <div style={{ fontSize: 9, color: '#a1a1aa', marginTop: 2 }} data-e-ref="staff-last-carry-in">Last deposit carried forward remainder as carry-in: ${carryAmount.toFixed(2)} (last-deposit-panel equivalent notice)</div>
+                  )}
                 </Card>
               </div>
             </div>

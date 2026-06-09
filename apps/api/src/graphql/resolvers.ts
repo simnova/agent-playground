@@ -193,7 +193,11 @@ export const resolvers: Resolvers = {
       }
       const states = bucketDocs.map(docToBucketState);
       const nameMap = new Map(states.map((s) => [s.id, s.name]));
-      const calc = calculateDepositAllocation(amount, states);
+      // IAEP Remainder Carry-Forward (per PO brief + back-end persona): fetch prior real deposit remainder (only applies from DB, not sims)
+      const lastDepDocForSim = await Deposit.findOne().sort({ timestamp: -1 });
+      const carry = (lastDepDocForSim as any)?.remainder || 0;
+      const toDistribute = amount + carry;
+      const calc = calculateDepositAllocation(toDistribute, states);
 
       // Return as Deposit shape (synthetic id for simulate; full shape for client + cache patterns)
       const syntheticId = `sim-${Date.now()}`;
@@ -204,6 +208,7 @@ export const resolvers: Resolvers = {
         allocations: buildAllocationEmbeds(calc.allocations, nameMap),
         totalAllocated: calc.totalAllocated,
         remainder: calc.remainder,
+        carryAmount: carry,
       } as any;
     },
 
@@ -221,7 +226,11 @@ export const resolvers: Resolvers = {
       }
       const states = bucketDocs.map(docToBucketState);
       const nameMap = new Map(states.map((s) => [s.id, s.name]));
-      const calc = calculateDepositAllocation(amount, states);
+      // IAEP Remainder Carry-Forward (per PO brief): const carry = lastDep?.remainder || 0; const toDistribute = amount + carry; calc = calculate...(reuse core unchanged)
+      const lastDepDoc = await Deposit.findOne().sort({ timestamp: -1 });
+      const carry = (lastDepDoc as any)?.remainder || 0;
+      const toDistribute = amount + carry;
+      const calc = calculateDepositAllocation(toDistribute, states);
 
       // Persist balance updates (authoritative apply)
       for (const bDoc of bucketDocs) {
@@ -241,6 +250,7 @@ export const resolvers: Resolvers = {
         allocations: allocEmbeds,
         totalAllocated: calc.totalAllocated,
         remainder: calc.remainder,
+        carryAmount: carry,
       });
 
       return toGql(depDoc) as any;

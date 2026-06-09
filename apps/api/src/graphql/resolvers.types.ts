@@ -103,6 +103,7 @@ export type Deposit = {
   /** Embedded results from the portable DepositCalculator (exact allocation decisions for this deposit). */
   allocations: Array<Allocation>;
   amount: Scalars['Float']['output'];
+  carryAmount: Scalars['Float']['output'];
   id: Scalars['ID']['output'];
   remainder: Scalars['Float']['output'];
   timestamp: Scalars['String']['output'];
@@ -371,6 +372,7 @@ export type CurrentStateResolvers<ContextType = GraphQLContext, ParentType exten
 export type DepositResolvers<ContextType = GraphQLContext, ParentType extends ResolversParentTypes['Deposit'] = ResolversParentTypes['Deposit']> = {
   allocations?: Resolver<Array<ResolversTypes['Allocation']>, ParentType, ContextType>;
   amount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  carryAmount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   remainder?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   timestamp?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

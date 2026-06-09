@@ -91,6 +91,7 @@ export interface IDeposit {
   allocations: IAllocationResult[];
   totalAllocated: number;
   remainder: number;
+  carryAmount: number;
   createdAt: Date;
 }
 
@@ -111,6 +112,7 @@ const DepositSchema = new mongoose.Schema<IDeposit>({
   allocations: { type: [AllocationResultSchema], default: [] },
   totalAllocated: { type: Number, default: 0 },
   remainder: { type: Number, default: 0 },
+  carryAmount: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
 });
 
