@@ -74,15 +74,20 @@ export function calculateDepositAllocation(depositAmount: number, currentBuckets
 
   const sortedBySpillOrder = [...currentBuckets].sort((a, b) => a.spillOverOrder - b.spillOverOrder);
 
-  // Compute direct % intended shares (v1: all buckets participate via their percentAlloc of the top deposit.
-  // v2 can start from roots only and recurse distribute using child percentAlloc of parent's received share.)
-  const intendedShares = new Map<string, number>();
-  let sumShares = 0;
-  for (const b of currentBuckets) {
-    const share = depositAmount * Math.max(0, b.percentAlloc || 0);
-    intendedShares.set(b.id, share);
-    sumShares += share;
-  }
+  // v2 recursive allocation (Brief 4 po-brief-4-hierarchy-v2 + architect maintainability):
+  // - roots (buckets with no parentId or unknown parent) receive top-level share = deposit * percentAlloc
+  // - if a node has direct children (via childrenMap scaffold), subdivide its full incoming/received share to children
+  //   using their percentAlloc (normalized at level so full share distributes; matches "subdivide the received share")
+  // - recursion applies at each level: caps via tryAllocateTo, excess spill via applySpillover (reuses depth guard >12 + explicit spillOverBucketUsed + order waterfall)
+  // - only nodes without children in the set ("terminals"/leaves) receive via tryAllocateTo to their balance
+  // - containers/parents receive 0 from % path (their slot is subdivided); spillover can still target any bucket
+  // - flat case (no parentIds or all unknown): roots==all, no kids => direct % shares: 100% v1 flat compat + 20000 hygiene unchanged
+  // - all original NaN/undef guards, rounding, projectedBalances, remainder, sort-by-spillOrder preserved
+  // - depth guard prevents infinite in deep/recursive + spillover chains
+  const roots = currentBuckets.filter((b) => {
+    const pid = b.parentId;
+    return !pid || !bucketMap.has(pid);
+  });
 
   // Helper: try to allocate 'amt' to a specific bucket, respecting its current (base + already allocated in this calc) room under cap.
   // Returns { taken, excess, didCap }
@@ -121,7 +126,7 @@ export function calculateDepositAllocation(depositAmount: number, currentBuckets
   }
 
   // Spillover waterfall (excess handling): prefer explicit spillOverBucketUsed, then scan in spillOverOrder.
-  // Uses a depth guard to avoid cycles.
+  // Uses a depth guard to avoid cycles. (Reused at every level for v2.)
   function applySpillover(excess: number, originId: string, depth = 0): number {
     if (excess <= 0 || depth > 12) return excess;
 
@@ -142,6 +147,7 @@ export function calculateDepositAllocation(depositAmount: number, currentBuckets
     if (remaining > 0) {
       for (const candidate of sortedBySpillOrder) {
         if (candidate.id === originId) continue;
+        if (childrenMap.has(candidate.id)) continue; // v2: skip containers (their % share is subdivided to direct children via recursion); only spill to terminals (or via explicit spillOverBucketUsed)
         const priorAlloc = allocationsMap.get(candidate.id);
         // Skip if we just know it's at cap from this calc (simple heuristic; re-check inside try)
         const res = tryAllocateTo(candidate.id, remaining);
@@ -158,15 +164,42 @@ export function calculateDepositAllocation(depositAmount: number, currentBuckets
     return Math.max(0, remaining);
   }
 
-  // Main % allocation pass (order-independent for the proportional shares)
-  for (const b of currentBuckets) {
-    const share = intendedShares.get(b.id) || 0;
-    if (share <= 0) continue;
+  // Recursive distributor (v2): called for each root's share; descends via childrenMap subdividing at containers.
+  function distributeSubtree(bucketId: string, incomingShare: number, depth = 0): void {
+    if (depth > 12 || incomingShare <= 0) return;
 
-    const res = tryAllocateTo(b.id, share);
-    if (res.excess > 0) {
-      applySpillover(res.excess, b.id);
+    const kids = childrenMap.get(bucketId) || [];
+    if (kids.length > 0) {
+      // This node is a container/parent: subdivide the *full* incoming share to direct children using their percentAlloc.
+      // Normalize sibling percents at this level (robust if sum != 1.0) so the received share is fully distributed down.
+      // Caps/spill will be applied when we reach the terminals that receive.
+      let sumChildPct = 0;
+      const childPcts: Array<{ id: string; pct: number }> = [];
+      for (const kidId of kids) {
+        const kid = bucketMap.get(kidId);
+        const p = Math.max(0, kid?.percentAlloc || 0);
+        childPcts.push({ id: kidId, pct: p });
+        sumChildPct += p;
+      }
+      for (const cp of childPcts) {
+        const childShare = sumChildPct > 0 ? incomingShare * (cp.pct / sumChildPct) : 0;
+        distributeSubtree(cp.id, childShare, depth + 1);
+      }
+      // Intentionally: no tryAllocateTo here for the container itself (subdivided to children per Brief 4 spec).
+    } else {
+      // Terminal/leaf (no children in set, or flat root): allocate the (possibly compounded) incoming share.
+      // This path is exactly the v1 direct for flat seeds.
+      const res = tryAllocateTo(bucketId, incomingShare);
+      if (res.excess > 0) {
+        applySpillover(res.excess, bucketId, depth);
+      }
     }
+  }
+
+  // Start v2 from roots only (top-level % of deposit); recursion handles subdivision + per-level caps/spill.
+  for (const root of roots) {
+    const rootShare = depositAmount * Math.max(0, root.percentAlloc || 0);
+    distributeSubtree(root.id, rootShare, 0);
   }
 
   // NaN/undefined hygiene guards (evaluator requirement for back-end calc; pure fn, fallback 0; prevents NaN propagate to apply/persist/projected. Root typo `_prior` fixed + this defense.)
@@ -288,13 +321,14 @@ export function runHygieneTest(): void {
   console.log('  projectedBalances sample:', { b1: result.projectedBalances.b1, b2: result.projectedBalances.b2 });
   // For full e2e: this now feeds correct to applyDeposit -> persist -> currentState
 
-  // Hierarchy extension start (Brief 2): exercise parentId + childrenMap path with a parent+child seed.
-  // v1 semantics preserved (direct % alloc to *all* incl. children, for compat with client computeLiveAllocations in staff/public + existing @e flat data/hygiene).
-  // Asserts: no NaN, childrenMap populated for the parent, child still receives its direct share (v1), projected sane.
-  // This starts the hierarchy coverage in the hygiene sample without altering core allocation (future v2 can recurse % subdivision from parent's received).
+  // Hierarchy v2 (Brief 4 po-brief-4-hierarchy-v2): exercise parentId + childrenMap + recursive subdivide.
+  // Realistic per-level % (root subtree share=1.0, child under it 1.0); full received subdivided to child.
+  // childrenMap + distributeSubtree exercised; terminals receive; containers do not (subdiv path).
+  // NaN guards, caps/spill at leaf, projected still apply. Flat 20000 behavior untouched above.
+  // Dedicated vitest cases below cover multi-level + caps + explicit spillOverBucketUsed + cross-branch spill.
   const hierSeed: BucketState[] = [
-    { id: 'r1', name: 'RootAlloc', percentAlloc: 0.6, maxAmount: null, spillOverOrder: 10, balance: 0, parentId: null, spillOverBucketUsed: null },
-    { id: 'c1', name: 'ChildAlloc', percentAlloc: 0.4, maxAmount: null, spillOverOrder: 20, balance: 0, parentId: 'r1', spillOverBucketUsed: null },
+    { id: 'r1', name: 'RootAlloc', percentAlloc: 1.0, maxAmount: null, spillOverOrder: 10, balance: 0, parentId: null, spillOverBucketUsed: null },
+    { id: 'c1', name: 'ChildAlloc', percentAlloc: 1.0, maxAmount: null, spillOverOrder: 20, balance: 0, parentId: 'r1', spillOverBucketUsed: null },
   ];
   const hres = calculateDepositAllocation(1000, hierSeed);
 
@@ -303,14 +337,14 @@ export function runHygieneTest(): void {
                   !Number.isFinite(hres.totalAllocated) || !Number.isFinite(hres.remainder);
   if (hierNaN) {
     console.error('HIERARCHY HYGIENE FAIL: NaN in parented calc');
-    throw new Error('calculateDepositAllocation produced NaN on hierarchy seed (v1)');
+    throw new Error('calculateDepositAllocation produced NaN on hierarchy seed (v2)');
   }
   const childA = hres.allocations.find((a) => a.bucketId === 'c1');
   if (!childA || childA.allocated <= 0) {
-    console.warn('HIERARCHY WARN: child did not receive direct % share (v1 expectation)');
+    console.warn('HIERARCHY WARN: child did not receive subdivided share (v2 expectation)');
   }
-  // childrenMap was built internally (scaffolding exercised)
-  console.log('HIERARCHY SCAFFOLD TEST (Brief 2 start, v1 flat-alloc + parentId/childrenMap exercised): PASSED');
+  // childrenMap + recursion was exercised (v2)
+  console.log('HIERARCHY SCAFFOLD TEST (Brief 4 v2 recursive + parentId/childrenMap): PASSED');
   console.log('  hier totalAllocated:', hres.totalAllocated, 'child allocated:', childA?.allocated);
 }
 

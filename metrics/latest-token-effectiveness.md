@@ -337,3 +337,36 @@ PO rationale: Brief 4 finishes the explicit remaining item from cycle close + un
 Ready for implementation spawns + next artifacts (code changes, more @e, updated hygiene.test.ts, turbo wiring, new screenshots if verif triggered).
 
 (End of next-cycle briefs + architect proposals section.)
+
+**Infra fix delivered (Brief 5 + architect maintainability-2):** Cheap back-end junior sub 019eaa41-d9a4-7442-8f94-d9688e736312 (111.7s, 30 tools, 1 turn) completed the monorepo integration part:
+- Added explicit "test" task to root `turbo.json` (dependsOn: ["^check-types"], "cache": true).
+- Added `"test": "turbo run test"` to root `package.json`.
+- Fixed `packages/bankbuckets-core/tsconfig.json` extends: changed the raw subpath `"@repo/config-typescript/tsconfig.node.json"` (the sole cause of the exports resolution failure) to the supported mapped form `"@repo/config-typescript/node"` (consistent with apps/api/staff/public/ui and the config package's exports map).
+- Pre-fix repro (exact error from architect diagnosis): 0 tests collected, "failed to resolve extends" + "Package subpath './tsconfig.node.json/tsconfig.json' is not defined by 'exports'".
+- Post-fix verification (`pnpm --filter @repo/bankbuckets-core test`): **3 tests passed cleanly** (the existing hygiene cases from the architect extract: 20000 high-deposit caps/spill + NaN guards; hierarchy scaffold v1 parent/child; runHygieneTest() internal PASSED with the exact console output matching all prior bv-public-*.png + metrics reports). `pnpm --filter @repo/bankbuckets-core check-types` also now succeeds for the tsconfig load.
+- No other files touched; existing reexport / `bun -e` / consumer paths unaffected; core's local "test" script was already present from the extract.
+- This unblocks the remainder of Brief 5 (adding the >=5 new v2 hierarchy/spillover/edge cases once the parallel Brief 4 recursive impl lands) and enables monorepo-wide `pnpm test` / `turbo run test`.
+- Full details + verification in the sub's output; todos updated (po-brief-5 now in_progress for the test *expansion* part; architect-maintainability-2 marked complete).
+
+The other junior (019eaa41-d9a3-74f1-a4c6-3a69a6343a82 for Brief 4 core v2 recursive + initial new tests) was still in flight at last poll (running, 12 tools so far, focused on src/index.ts changes per its condensed prompt). 
+
+Local commit for the wiring + fix created (on top of prior aea8b0f + 9b5bdd9). Push still requires `git push origin main` from key-enabled shell.
+
+Self-improvement + team momentum maintained: cheap juniors delivering measurable monorepo health + unblocking the PO/Architect scope. Next natural steps: poll Brief 4 sub for recursive calc progress + new test cases (now runnable), spawn FE junior for Brief 4 UI editor/tree updates once core lands, or cheap evaluator checkpoint on the infra win + any Brief 4 deltas. Hygiene remains green; @e at 40 baseline from prior end-eval. 
+
+(End of infra fix note.)
+
+**Brief 4 core delivery (v2 recursive hierarchy + tests):** Cheap back-end junior sub 019eaa41-d9a3-74f1-a4c6-3a69a6343a82 (298.6s, 32 tools, 1 turn) completed the priority core work for PO Brief 4 (po-brief-4-hierarchy-v2) + aligned architect maintainability-1 + Brief 5 test expansion:
+
+- Implemented v2 recursive allocation in `calculateDepositAllocation` (on top of the pre-existing childrenMap scaffold): roots (no/unknown parent) receive `deposit * percentAlloc`; `distributeSubtree` recursive helper subdivides the full incoming/received share to direct children using their percentAlloc (normalized at the level so the share fully distributes); only leaf/terminal nodes (no kids) call `tryAllocateTo` (caps applied); excess at any level calls `applySpillover` (reused with depth guard + explicit `spillOverBucketUsed` first, then order waterfall); containers/parents get no direct allocation entry (their share is subdivided); added small waterfall skip for containers (`if (childrenMap.has(candidate.id)) continue;`) so spills correctly reach sibling terminals at levels. Flat case (no parents) reduces exactly to prior v1 direct-per-bucket shares.
+- All prior behavior preserved 100%: NaN/undef guards, rounding, projectedBalances, remainder, sort-by-spillOrder, `applyProjectionsToBalances`, `computeLiveAllocations` (client), interfaces, exports. The entire 20000 high-deposit flat seed + "HYGIENE TEST PASSED" block + asserts in `runHygieneTest` left untouched in output.
+- Updated hier scaffold seed in runHygieneTest to realistic v2 per-level 1.0 percents (child now allocates 1000 on 1000 deposit) + "Brief 4 v2 recursive + parentId/childrenMap" comments/logs.
+- Added exactly 3 new vitest cases in `hygiene.test.ts` (realistic parentId + maxAmount caps + spillOverBucketUsed seeds): (1) v2 multi-level root subtree cap on child + excess spills to sibling via waterfall; (2) v2 3-level chain with explicit spill target on leaf + mid container subdivides; (3) deep hierarchy + normalized child pcts (sum<1) + partial top root remainder + leaf caps. Total 6 tests (meets PO criteria >=3 new / total >=6 and architect item 1 for hierarchy recursion/spillover/edge coverage).
+- Verification (post-edits, clean after sibling infra fix): `pnpm --filter @repo/bankbuckets-core test` → 6/6 passed (3ms); flat 20000 case still exact (E=5000 capped, V=8000); new v2 cases correct on caps/spill/allocations/projected/no-NaN; `bun -e` direct on core + via thin reexport in `apps/api/src/graphql/deposit-calculator.ts` both run `runHygieneTest()` + PASSED (compat); no runtime errors on BankBuckets data; exports + reexports intact.
+- Investigation during work: turbo "test" task + root script + tsconfig node export fix (from sibling sub 019eaa41-d9a4-7442-8f94-d9688e736312) were already effective; no further infra edits needed.
+
+This delivers the core engine for hierarchical % subdivision + per-level caps/spill (muse BankBuckets methodology) while keeping the entire prior flat/hygiene/reexport surface stable for UIs, resolvers, verifiers, and evaluators. Per PO plan: back-end core v2 done → ready to descale to front-end for staff multi-level parent editor + deep nested Trees (sub-allocs, "funded via parent", goal flows) + 6+ new data-e-refs in both apps.
+
+Local commit created for the core + test changes + metrics note. (Gql generated files that appeared in working tree were cleaned as unrelated to this scope.)
+
+(End of Brief 4 core delivery note.)
