@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@apollo/client';
-import { Avatar, message as antdMessage, Button, Card, InputNumber, List, Modal, Progress, Slider, Space, Tag, Tree, Typography } from 'antd';
+import { Avatar, message as antdMessage, Button, Card, InputNumber, List, Modal, Progress, Slider, Space, Statistic, Tag, Tree, Typography } from 'antd';
 import { useMemo, useState } from 'react';
 import { gql } from './gql/gql';
 
@@ -175,6 +175,47 @@ function computeLiveAllocations(
   return { allocations: allocs, projectedBalances: projected, totalAllocated, remaining: Math.max(0, amount - totalAllocated) };
 }
 
+// === Client-side multi-period projections for long-term outlook (Epic-5) ===
+// Reuses the exact computeLiveAllocations (deposit-calculator logic adapted for public) iteratively.
+// Provides optimistic, zero-latency 3/6/12mo sample projections under fixed deposit scenarios.
+// No server roundtrip; updates live when currentState refetches after Apply.
+function computeClientProjections(depositAmount: number, numPeriods: number, buckets: BucketLike[]): { finalTotal: number; periods: Array<{ period: number; totalBalance: number }>; bucketFinals: Record<string, number> } {
+  if (numPeriods <= 0 || depositAmount <= 0 || buckets.length === 0) {
+    const tot = buckets.reduce((s, b) => s + b.currentBalance, 0);
+    return { finalTotal: tot, periods: [], bucketFinals: Object.fromEntries(buckets.map((b) => [b.id, b.currentBalance])) };
+  }
+  let currentBalances: Record<string, number> = {};
+  buckets.forEach((b) => {
+    currentBalances[b.id] = b.currentBalance;
+  });
+  const periods: Array<{ period: number; totalBalance: number }> = [];
+  for (let i = 1; i <= numPeriods; i++) {
+    const calcInput: BucketLike[] = buckets.map((b) => ({
+      ...b,
+      currentBalance: currentBalances[b.id] ?? b.currentBalance,
+    }));
+    const res = computeLiveAllocations(depositAmount, calcInput);
+    currentBalances = res.projectedBalances;
+    const periodTotal = Object.values(currentBalances).reduce((sum, v) => sum + (v || 0), 0);
+    periods.push({ period: i, totalBalance: periodTotal });
+  }
+  const lastPeriod = periods[periods.length - 1];
+  const finalTotal = lastPeriod ? lastPeriod.totalBalance : buckets.reduce((s, b) => s + b.currentBalance, 0);
+  return { finalTotal, periods, bucketFinals: currentBalances };
+}
+
+type LongTermScenarioOutlook = {
+  amount: number;
+  byHorizon: Record<number, { total: number; growth: number; growthPct: number }>;
+  hint: string;
+};
+
+const longTermScenarios = [
+  { key: 'conservative', label: 'Conservative', amount: 250, hint: 'Small consistent steps' },
+  { key: 'typical', label: 'Typical', amount: 750, hint: 'Matches common preview' },
+  { key: 'ambitious', label: 'Ambitious', amount: 2000, hint: 'Accelerated outlook' },
+] as const;
+
 function App() {
   // Primary data: currentState (buckets w/ hierarchy + goal links, goals list, totals). Reused contract.
   const { data, loading, error, refetch } = useQuery(GET_CURRENT_STATE);
@@ -274,6 +315,34 @@ function App() {
 
     return roots.map(toNode);
   }, [serverBuckets, livePreview, goals]);
+
+  // Client optimistic long-term projections (3/6/12mo under sample deposit scenarios)
+  // Reuses computeLiveAllocations (deposit-calculator logic) for instant updates + optimistic on refetch/apply.
+  const currentTotalBalance = useMemo(() => {
+    return data?.currentState?.totalBalance ?? serverBuckets.reduce((s, b) => s + b.currentBalance, 0);
+  }, [data?.currentState?.totalBalance, serverBuckets]);
+
+  const longTermOutlooks = useMemo(() => {
+    if (serverBuckets.length === 0) return {} as Record<string, LongTermScenarioOutlook>;
+    return longTermScenarios.reduce(
+      (acc: Record<string, LongTermScenarioOutlook>, sc) => {
+        const horizons = [3, 6, 12];
+        const byHorizon: Record<number, { total: number; growth: number; growthPct: number }> = {};
+        horizons.forEach((h) => {
+          const p = computeClientProjections(sc.amount, h, serverBuckets);
+          const growth = p.finalTotal - currentTotalBalance;
+          byHorizon[h] = {
+            total: Math.round(p.finalTotal),
+            growth: Math.round(growth),
+            growthPct: currentTotalBalance > 0 ? Math.min(100, Math.round((growth / currentTotalBalance) * 100)) : 0,
+          };
+        });
+        acc[sc.key] = { amount: sc.amount, byHorizon, hint: sc.hint };
+        return acc;
+      },
+      {} as Record<string, LongTermScenarioOutlook>
+    );
+  }, [serverBuckets, currentTotalBalance]);
 
   // Quick chips per ux wireframes
   const quickChips = [250, 500, 750, 1000, 1500, 2000];
@@ -421,6 +490,7 @@ function App() {
           <Card size="small" data-e-ref="public-hello-card">
             <Typography.Text strong>Server says: </Typography.Text>
             <Typography.Text style={{ color: '#52c41a' }}>{loading ? '…' : (data?.hello ?? '—')}</Typography.Text>
+            {/* biome-ignore lint/complexity/useLiteralKeys: VITE_* come from index signature in vite/client types; bracket required by noPropertyAccessFromIndexSignature (matches lib/apollo-client.ts) */}
             <div style={{ fontSize: 12, color: '#71717a', marginTop: 4 }}>Endpoint: {import.meta.env['VITE_GRAPHQL_URL'] || 'https://api.localhost/graphql'} (portless .localhost ready for browser-verifier)</div>
           </Card>
 
@@ -581,45 +651,101 @@ function App() {
             </Typography.Text>
           </Card>
 
-          {/* N-paycheck teaser using real projections GQL (per task handoff note) */}
+          {/* Projections & Long-term Outlook teaser (polished per ux wireframes + Epic-5): sample 3/6/12mo outlooks under different deposit scenarios.
+              Uses existing PROJECTIONS query (server cross-check for live deposit + N) OR client-compute (reusing deposit-calculator via computeClientProjections for optimistic/instant multi-scenario).
+              AntD Statistic + Progress "charts" + Cards. Optimistic on refetch/apply. Added @e data-refs. Keeps public green theme. */}
           <Card
-            title={`Future You — ${projCount}-paycheck projection ($${depositAmount} each)`}
+            title="Projections & Long-term Outlook"
             extra={
               <Space>
                 {[3, 6, 12].map((n) => (
                   <Button key={n} size="small" onClick={() => setProjCount(n)} data-e-ref={`proj-chip-${n}`}>
-                    {n}×
+                    {n}× server
                   </Button>
                 ))}
-                <Button size="small" onClick={() => refetch()} loading={projLoading}>
-                  Recompute
+                <Button size="small" onClick={() => refetch()} loading={projLoading} data-e-ref="projections-recompute-btn">
+                  Recompute server
                 </Button>
               </Space>
             }
-            data-e-ref="projections-teaser"
+            style={{ border: '1px solid #166534' }}
+            data-e-ref="projections-longterm-outlook"
           >
-            {projLoading && <Typography.Text type="secondary">Calculating your future growth…</Typography.Text>}
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              Sample future projections under different regular deposit scenarios. 3/6/12-month outlooks computed client-side (optimistic, reuses deposit allocation logic for instant feedback as buckets update). Progress bars
+              visualize relative growth outlook.
+            </Typography.Text>
+            {!hasBuckets && (
+              <Tag color="warning" style={{ marginTop: 8 }}>
+                No buckets loaded — client projections + server cross-check will populate once seeded (staff or hygiene test).
+              </Tag>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3" data-e-ref="outlook-scenarios-grid">
+              {longTermScenarios.map((sc) => {
+                const outlook = longTermOutlooks[sc.key];
+                return (
+                  <Card
+                    key={sc.key}
+                    size="small"
+                    style={{ background: '#111113', borderColor: '#166534' }}
+                    data-e-ref={`scenario-card-${sc.key}`}
+                    title={
+                      <span>
+                        <strong>{sc.label}</strong> <Tag color="green">${sc.amount}</Tag>
+                      </span>
+                    }
+                  >
+                    <div style={{ fontSize: 11, color: '#a3a3a3', marginBottom: 6 }}>{sc.hint}</div>
+                    {[3, 6, 12].map((mo) => {
+                      const h = outlook?.byHorizon?.[mo];
+                      const val = h?.total ?? 0;
+                      const g = h?.growth ?? 0;
+                      return (
+                        <div key={mo} style={{ marginBottom: 6 }} data-e-ref={`outlook-${mo}mo-${sc.key}`}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Statistic title={`${mo}mo`} value={val} prefix="$" valueStyle={{ fontSize: 15, color: '#52c41a' }} style={{ margin: 0 }} />
+                            <span style={{ fontSize: 10, color: g >= 0 ? '#4ade80' : '#71717a' }}>+${g}</span>
+                          </div>
+                          <Progress percent={h?.growthPct ?? 0} size="small" strokeColor="#52c41a" showInfo={false} aria-label={`${sc.label} ${mo}mo growth outlook`} />
+                        </div>
+                      );
+                    })}
+                    <Button
+                      size="small"
+                      style={{ marginTop: 4, width: '100%' }}
+                      onClick={() => {
+                        setDepositAmount(sc.amount);
+                        antdMessage.info(`Preview updated to $${sc.amount} (${sc.label}). Watch the live allocation above.`);
+                      }}
+                      data-e-ref={`set-scenario-btn-${sc.key}`}
+                    >
+                      Use ${sc.amount} in live preview
+                    </Button>
+                  </Card>
+                );
+              })}
+            </div>
+            {/* Server cross-check: still uses the existing PROJECTIONS query (tied to current depositAmount + projCount) for verification / "ground truth" comparison. */}
             {projData?.projections && (
-              <div>
-                <div style={{ fontSize: 13 }}>
-                  After {projData.projections.count} paychecks of ${projData.projections.amount}, projected total balance: <strong style={{ color: '#52c41a' }}>${projData.projections.finalProjectedTotal.toFixed(0)}</strong>
-                </div>
-                <List
-                  size="small"
-                  style={{ marginTop: 8 }}
-                  dataSource={projData.projections.periods.slice(0, 4)}
-                  renderItem={(p: any) => (
-                    <List.Item key={p.period}>
-                      Paycheck #{p.period}: ~${p.totalBalance.toFixed(0)} total across buckets
-                    </List.Item>
-                  )}
-                />
-                <div style={{ fontSize: 11, color: '#71717a', marginTop: 4 }}>
-                  Powered by real <code>projections</code> resolver (server-side compounding). Motivational "set and forget" evidence.
-                </div>
+              <div style={{ marginTop: 12, paddingTop: 8, borderTop: '1px dashed #166534', fontSize: 11 }} data-e-ref="server-projections-crosscheck">
+                <Typography.Text type="secondary">
+                  Server-backed (existing projections query) for your current $${projData.projections.amount} × {projData.projections.count}:{' '}
+                </Typography.Text>
+                <strong style={{ color: '#52c41a' }}>${projData.projections.finalProjectedTotal.toFixed(0)}</strong> final total.
+                <span style={{ color: '#71717a' }}>
+                  {' '}
+                  (sample periods:{' '}
+                  {projData.projections.periods
+                    .slice(0, 2)
+                    .map((p: any) => `#${p.period}~$${p.totalBalance.toFixed(0)}`)
+                    .join(', ')}
+                  ...)
+                </span>
               </div>
             )}
-            {!projData && !projLoading && hasBuckets && <Typography.Text type="secondary">Adjust deposit or click Recompute to see multi-paycheck projections.</Typography.Text>}
+            <div style={{ fontSize: 10, color: '#71717a', marginTop: 8 }}>
+              Optimistic client updates on bucket refresh/apply (refetch). No interest modeled. Change scenarios or use "Apply" in preview above — watch the outlooks move. Ready for @e verification.
+            </div>
           </Card>
 
           <Typography.Text type="secondary" style={{ fontSize: 10, textAlign: 'center', display: 'block' }}>
