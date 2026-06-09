@@ -9,11 +9,11 @@ export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> =
 export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: { input: string; output: string };
-  String: { input: string; output: string };
-  Boolean: { input: boolean; output: boolean };
-  Int: { input: number; output: number };
-  Float: { input: number; output: number };
+  ID: { input: string; output: string; }
+  String: { input: string; output: string; }
+  Boolean: { input: boolean; output: boolean; }
+  Int: { input: number; output: number; }
+  Float: { input: number; output: number; }
 };
 
 export type AgentMetric = {
@@ -134,17 +134,21 @@ export type Mutation = {
   simulateDeposit: Deposit;
 };
 
+
 export type MutationAddMessageArgs = {
   text: Scalars['String']['input'];
 };
+
 
 export type MutationApplyDepositArgs = {
   amount: Scalars['Float']['input'];
 };
 
+
 export type MutationConfigureBucketsArgs = {
   configs: Array<BucketConfigInput>;
 };
+
 
 export type MutationCreateGoalArgs = {
   description?: InputMaybe<Scalars['String']['input']>;
@@ -152,14 +156,17 @@ export type MutationCreateGoalArgs = {
   targetAmount: Scalars['Float']['input'];
 };
 
+
 export type MutationLinkGoalArgs = {
   bucketId: Scalars['ID']['input'];
   goalId: Scalars['ID']['input'];
 };
 
+
 export type MutationRecordAgentMetricArgs = {
   input: AgentMetricInput;
 };
+
 
 export type MutationSimulateDepositArgs = {
   amount: Scalars['Float']['input'];
@@ -189,493 +196,63 @@ export type Query = {
   projections: Projections;
 };
 
+
 export type QueryProjectionsArgs = {
   amount: Scalars['Float']['input'];
   count: Scalars['Int']['input'];
 };
 
-export type GetMessagesQueryVariables = Exact<{ [key: string]: never }>;
+export type GetCurrentStateQueryVariables = Exact<{ [key: string]: never; }>;
 
-export type GetMessagesQuery = { __typename?: 'Query'; hello: string; messages: Array<{ __typename?: 'Message'; id: string; text: string }> };
 
-export type AddMessageMutationVariables = Exact<{
-  text: Scalars['String']['input'];
-}>;
-
-export type AddMessageMutation = { __typename?: 'Mutation'; addMessage: { __typename?: 'Message'; id: string; text: string } };
-
-export type GetCurrentStateQueryVariables = Exact<{ [key: string]: never }>;
-
-export type GetCurrentStateQuery = {
-  __typename?: 'Query';
-  hello: string;
-  currentState: {
-    __typename?: 'CurrentState';
-    totalBalance: number;
-    buckets: Array<{
-      __typename?: 'Bucket';
-      id: string;
-      name: string;
-      percentAlloc: number;
-      maxAmount?: number | null;
-      spillOverOrder: number;
-      spillOverBucketUsed?: string | null;
-      balance: number;
-      parent?: { __typename?: 'Bucket'; id: string; name: string } | null;
-      children: Array<{ __typename?: 'Bucket'; id: string; name: string; percentAlloc: number; balance: number }>;
-      goal?: { __typename?: 'Goal'; id: string; name: string; targetAmount: number; description?: string | null } | null;
-    }>;
-    goals: Array<{ __typename?: 'Goal'; id: string; name: string; targetAmount: number; description?: string | null }>;
-    lastDeposit?: {
-      __typename?: 'Deposit';
-      id: string;
-      amount: number;
-      totalAllocated: number;
-      remainder: number;
-      allocations: Array<{ __typename?: 'Allocation'; bucketId: string; bucketName?: string | null; allocated: number; capped: boolean; spillOverBucketUsed?: string | null }>;
-    } | null;
-  };
-};
-
-export type ConfigureBucketsMutationVariables = Exact<{
-  configs: Array<BucketConfigInput> | BucketConfigInput;
-}>;
-
-export type ConfigureBucketsMutation = {
-  __typename?: 'Mutation';
-  configureBuckets: Array<{
-    __typename?: 'Bucket';
-    id: string;
-    name: string;
-    percentAlloc: number;
-    maxAmount?: number | null;
-    spillOverOrder: number;
-    balance: number;
-    goal?: { __typename?: 'Goal'; id: string; name: string; targetAmount: number } | null;
-  }>;
-};
+export type GetCurrentStateQuery = { __typename?: 'Query', hello: string, currentState: { __typename?: 'CurrentState', totalBalance: number, buckets: Array<{ __typename?: 'Bucket', id: string, name: string, percentAlloc: number, maxAmount?: number | null, spillOverOrder: number, spillOverBucketUsed?: string | null, balance: number, parent?: { __typename?: 'Bucket', id: string, name: string } | null, children: Array<{ __typename?: 'Bucket', id: string, name: string, percentAlloc: number, balance: number }>, goal?: { __typename?: 'Goal', id: string, name: string, targetAmount: number, description?: string | null } | null }>, goals: Array<{ __typename?: 'Goal', id: string, name: string, targetAmount: number, description?: string | null }>, lastDeposit?: { __typename?: 'Deposit', id: string, amount: number, totalAllocated: number, remainder: number, allocations: Array<{ __typename?: 'Allocation', bucketId: string, bucketName?: string | null, allocated: number, capped: boolean, spillOverBucketUsed?: string | null }> } | null } };
 
 export type ApplyDepositMutationVariables = Exact<{
   amount: Scalars['Float']['input'];
 }>;
 
-export type ApplyDepositMutation = {
-  __typename?: 'Mutation';
-  applyDeposit: {
-    __typename?: 'Deposit';
-    id: string;
-    amount: number;
-    totalAllocated: number;
-    remainder: number;
-    allocations: Array<{ __typename?: 'Allocation'; bucketId: string; bucketName?: string | null; allocated: number; capped: boolean; spillOverBucketUsed?: string | null }>;
-  };
-};
+
+export type ApplyDepositMutation = { __typename?: 'Mutation', applyDeposit: { __typename?: 'Deposit', id: string, amount: number, totalAllocated: number, remainder: number, allocations: Array<{ __typename?: 'Allocation', bucketId: string, bucketName?: string | null, allocated: number, capped: boolean, spillOverBucketUsed?: string | null }> } };
 
 export type SimulateDepositMutationVariables = Exact<{
   amount: Scalars['Float']['input'];
 }>;
 
-export type SimulateDepositMutation = {
-  __typename?: 'Mutation';
-  simulateDeposit: {
-    __typename?: 'Deposit';
-    id: string;
-    amount: number;
-    totalAllocated: number;
-    remainder: number;
-    allocations: Array<{ __typename?: 'Allocation'; bucketId: string; bucketName?: string | null; allocated: number; capped: boolean; spillOverBucketUsed?: string | null }>;
-  };
-};
+
+export type SimulateDepositMutation = { __typename?: 'Mutation', simulateDeposit: { __typename?: 'Deposit', id: string, amount: number, totalAllocated: number, remainder: number, allocations: Array<{ __typename?: 'Allocation', bucketId: string, bucketName?: string | null, allocated: number, capped: boolean, spillOverBucketUsed?: string | null }> } };
 
 export type GetProjectionsQueryVariables = Exact<{
   amount: Scalars['Float']['input'];
   count: Scalars['Int']['input'];
 }>;
 
-export type GetProjectionsQuery = {
-  __typename?: 'Query';
-  projections: {
-    __typename?: 'Projections';
-    amount: number;
-    count: number;
-    finalProjectedTotal: number;
-    periods: Array<{ __typename?: 'PeriodProjection'; period: number; totalBalance: number; bucketProjections: Array<{ __typename?: 'BucketProjection'; bucketId: string; bucketName: string; projectedBalance: number }> }>;
-  };
-};
 
-export const GetMessagesDocument = {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'query',
-      name: { kind: 'Name', value: 'GetMessages' },
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: { kind: 'Name', value: 'messages' },
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'text' } },
-              ],
-            },
-          },
-          { kind: 'Field', name: { kind: 'Name', value: 'hello' } },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<GetMessagesQuery, GetMessagesQueryVariables>;
-export const AddMessageDocument = {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'mutation',
-      name: { kind: 'Name', value: 'AddMessage' },
-      variableDefinitions: [
-        { kind: 'VariableDefinition', variable: { kind: 'Variable', name: { kind: 'Name', value: 'text' } }, type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } } },
-      ],
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: { kind: 'Name', value: 'addMessage' },
-            arguments: [{ kind: 'Argument', name: { kind: 'Name', value: 'text' }, value: { kind: 'Variable', name: { kind: 'Name', value: 'text' } } }],
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'text' } },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<AddMessageMutation, AddMessageMutationVariables>;
-export const GetCurrentStateDocument = {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'query',
-      name: { kind: 'Name', value: 'GetCurrentState' },
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: { kind: 'Name', value: 'currentState' },
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                {
-                  kind: 'Field',
-                  name: { kind: 'Name', value: 'buckets' },
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'percentAlloc' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'maxAmount' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'spillOverOrder' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'spillOverBucketUsed' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'balance' } },
-                      {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'parent' },
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                            { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                          ],
-                        },
-                      },
-                      {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'children' },
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                            { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                            { kind: 'Field', name: { kind: 'Name', value: 'percentAlloc' } },
-                            { kind: 'Field', name: { kind: 'Name', value: 'balance' } },
-                          ],
-                        },
-                      },
-                      {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'goal' },
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                            { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                            { kind: 'Field', name: { kind: 'Name', value: 'targetAmount' } },
-                            { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                },
-                {
-                  kind: 'Field',
-                  name: { kind: 'Name', value: 'goals' },
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'targetAmount' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                    ],
-                  },
-                },
-                { kind: 'Field', name: { kind: 'Name', value: 'totalBalance' } },
-                {
-                  kind: 'Field',
-                  name: { kind: 'Name', value: 'lastDeposit' },
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'amount' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'totalAllocated' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'remainder' } },
-                      {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'allocations' },
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            { kind: 'Field', name: { kind: 'Name', value: 'bucketId' } },
-                            { kind: 'Field', name: { kind: 'Name', value: 'bucketName' } },
-                            { kind: 'Field', name: { kind: 'Name', value: 'allocated' } },
-                            { kind: 'Field', name: { kind: 'Name', value: 'capped' } },
-                            { kind: 'Field', name: { kind: 'Name', value: 'spillOverBucketUsed' } },
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-          { kind: 'Field', name: { kind: 'Name', value: 'hello' } },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<GetCurrentStateQuery, GetCurrentStateQueryVariables>;
-export const ConfigureBucketsDocument = {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'mutation',
-      name: { kind: 'Name', value: 'ConfigureBuckets' },
-      variableDefinitions: [
-        {
-          kind: 'VariableDefinition',
-          variable: { kind: 'Variable', name: { kind: 'Name', value: 'configs' } },
-          type: { kind: 'NonNullType', type: { kind: 'ListType', type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'BucketConfigInput' } } } } },
-        },
-      ],
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: { kind: 'Name', value: 'configureBuckets' },
-            arguments: [{ kind: 'Argument', name: { kind: 'Name', value: 'configs' }, value: { kind: 'Variable', name: { kind: 'Name', value: 'configs' } } }],
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'percentAlloc' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'maxAmount' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'spillOverOrder' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'balance' } },
-                {
-                  kind: 'Field',
-                  name: { kind: 'Name', value: 'goal' },
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'targetAmount' } },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<ConfigureBucketsMutation, ConfigureBucketsMutationVariables>;
-export const ApplyDepositDocument = {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'mutation',
-      name: { kind: 'Name', value: 'ApplyDeposit' },
-      variableDefinitions: [
-        { kind: 'VariableDefinition', variable: { kind: 'Variable', name: { kind: 'Name', value: 'amount' } }, type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Float' } } } },
-      ],
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: { kind: 'Name', value: 'applyDeposit' },
-            arguments: [{ kind: 'Argument', name: { kind: 'Name', value: 'amount' }, value: { kind: 'Variable', name: { kind: 'Name', value: 'amount' } } }],
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'amount' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'totalAllocated' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'remainder' } },
-                {
-                  kind: 'Field',
-                  name: { kind: 'Name', value: 'allocations' },
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      { kind: 'Field', name: { kind: 'Name', value: 'bucketId' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'bucketName' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'allocated' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'capped' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'spillOverBucketUsed' } },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<ApplyDepositMutation, ApplyDepositMutationVariables>;
-export const SimulateDepositDocument = {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'mutation',
-      name: { kind: 'Name', value: 'SimulateDeposit' },
-      variableDefinitions: [
-        { kind: 'VariableDefinition', variable: { kind: 'Variable', name: { kind: 'Name', value: 'amount' } }, type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Float' } } } },
-      ],
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: { kind: 'Name', value: 'simulateDeposit' },
-            arguments: [{ kind: 'Argument', name: { kind: 'Name', value: 'amount' }, value: { kind: 'Variable', name: { kind: 'Name', value: 'amount' } } }],
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'amount' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'totalAllocated' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'remainder' } },
-                {
-                  kind: 'Field',
-                  name: { kind: 'Name', value: 'allocations' },
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      { kind: 'Field', name: { kind: 'Name', value: 'bucketId' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'bucketName' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'allocated' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'capped' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'spillOverBucketUsed' } },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<SimulateDepositMutation, SimulateDepositMutationVariables>;
-export const GetProjectionsDocument = {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'query',
-      name: { kind: 'Name', value: 'GetProjections' },
-      variableDefinitions: [
-        { kind: 'VariableDefinition', variable: { kind: 'Variable', name: { kind: 'Name', value: 'amount' } }, type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Float' } } } },
-        { kind: 'VariableDefinition', variable: { kind: 'Variable', name: { kind: 'Name', value: 'count' } }, type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } } } },
-      ],
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: { kind: 'Name', value: 'projections' },
-            arguments: [
-              { kind: 'Argument', name: { kind: 'Name', value: 'amount' }, value: { kind: 'Variable', name: { kind: 'Name', value: 'amount' } } },
-              { kind: 'Argument', name: { kind: 'Name', value: 'count' }, value: { kind: 'Variable', name: { kind: 'Name', value: 'count' } } },
-            ],
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                { kind: 'Field', name: { kind: 'Name', value: 'amount' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'count' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'finalProjectedTotal' } },
-                {
-                  kind: 'Field',
-                  name: { kind: 'Name', value: 'periods' },
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      { kind: 'Field', name: { kind: 'Name', value: 'period' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'totalBalance' } },
-                      {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'bucketProjections' },
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            { kind: 'Field', name: { kind: 'Name', value: 'bucketId' } },
-                            { kind: 'Field', name: { kind: 'Name', value: 'bucketName' } },
-                            { kind: 'Field', name: { kind: 'Name', value: 'projectedBalance' } },
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<GetProjectionsQuery, GetProjectionsQueryVariables>;
+export type GetProjectionsQuery = { __typename?: 'Query', projections: { __typename?: 'Projections', amount: number, count: number, finalProjectedTotal: number, periods: Array<{ __typename?: 'PeriodProjection', period: number, totalBalance: number, bucketProjections: Array<{ __typename?: 'BucketProjection', bucketId: string, bucketName: string, projectedBalance: number }> }> } };
+
+export type GetMessagesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetMessagesQuery = { __typename?: 'Query', hello: string, messages: Array<{ __typename?: 'Message', id: string, text: string }> };
+
+export type AddMessageMutationVariables = Exact<{
+  text: Scalars['String']['input'];
+}>;
+
+
+export type AddMessageMutation = { __typename?: 'Mutation', addMessage: { __typename?: 'Message', id: string, text: string } };
+
+export type ConfigureBucketsMutationVariables = Exact<{
+  configs: Array<BucketConfigInput> | BucketConfigInput;
+}>;
+
+
+export type ConfigureBucketsMutation = { __typename?: 'Mutation', configureBuckets: Array<{ __typename?: 'Bucket', id: string, name: string, percentAlloc: number, maxAmount?: number | null, spillOverOrder: number, balance: number, goal?: { __typename?: 'Goal', id: string, name: string, targetAmount: number } | null }> };
+
+
+export const GetCurrentStateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetCurrentState"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"currentState"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"buckets"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"percentAlloc"}},{"kind":"Field","name":{"kind":"Name","value":"maxAmount"}},{"kind":"Field","name":{"kind":"Name","value":"spillOverOrder"}},{"kind":"Field","name":{"kind":"Name","value":"spillOverBucketUsed"}},{"kind":"Field","name":{"kind":"Name","value":"balance"}},{"kind":"Field","name":{"kind":"Name","value":"parent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"children"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"percentAlloc"}},{"kind":"Field","name":{"kind":"Name","value":"balance"}}]}},{"kind":"Field","name":{"kind":"Name","value":"goal"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"targetAmount"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"goals"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"targetAmount"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalBalance"}},{"kind":"Field","name":{"kind":"Name","value":"lastDeposit"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"totalAllocated"}},{"kind":"Field","name":{"kind":"Name","value":"remainder"}},{"kind":"Field","name":{"kind":"Name","value":"allocations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"bucketId"}},{"kind":"Field","name":{"kind":"Name","value":"bucketName"}},{"kind":"Field","name":{"kind":"Name","value":"allocated"}},{"kind":"Field","name":{"kind":"Name","value":"capped"}},{"kind":"Field","name":{"kind":"Name","value":"spillOverBucketUsed"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"hello"}}]}}]} as unknown as DocumentNode<GetCurrentStateQuery, GetCurrentStateQueryVariables>;
+export const ApplyDepositDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ApplyDeposit"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"amount"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"applyDeposit"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"amount"},"value":{"kind":"Variable","name":{"kind":"Name","value":"amount"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"totalAllocated"}},{"kind":"Field","name":{"kind":"Name","value":"remainder"}},{"kind":"Field","name":{"kind":"Name","value":"allocations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"bucketId"}},{"kind":"Field","name":{"kind":"Name","value":"bucketName"}},{"kind":"Field","name":{"kind":"Name","value":"allocated"}},{"kind":"Field","name":{"kind":"Name","value":"capped"}},{"kind":"Field","name":{"kind":"Name","value":"spillOverBucketUsed"}}]}}]}}]}}]} as unknown as DocumentNode<ApplyDepositMutation, ApplyDepositMutationVariables>;
+export const SimulateDepositDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SimulateDeposit"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"amount"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"simulateDeposit"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"amount"},"value":{"kind":"Variable","name":{"kind":"Name","value":"amount"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"totalAllocated"}},{"kind":"Field","name":{"kind":"Name","value":"remainder"}},{"kind":"Field","name":{"kind":"Name","value":"allocations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"bucketId"}},{"kind":"Field","name":{"kind":"Name","value":"bucketName"}},{"kind":"Field","name":{"kind":"Name","value":"allocated"}},{"kind":"Field","name":{"kind":"Name","value":"capped"}},{"kind":"Field","name":{"kind":"Name","value":"spillOverBucketUsed"}}]}}]}}]}}]} as unknown as DocumentNode<SimulateDepositMutation, SimulateDepositMutationVariables>;
+export const GetProjectionsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetProjections"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"amount"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"count"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"projections"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"amount"},"value":{"kind":"Variable","name":{"kind":"Name","value":"amount"}}},{"kind":"Argument","name":{"kind":"Name","value":"count"},"value":{"kind":"Variable","name":{"kind":"Name","value":"count"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"count"}},{"kind":"Field","name":{"kind":"Name","value":"finalProjectedTotal"}},{"kind":"Field","name":{"kind":"Name","value":"periods"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"period"}},{"kind":"Field","name":{"kind":"Name","value":"totalBalance"}},{"kind":"Field","name":{"kind":"Name","value":"bucketProjections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"bucketId"}},{"kind":"Field","name":{"kind":"Name","value":"bucketName"}},{"kind":"Field","name":{"kind":"Name","value":"projectedBalance"}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetProjectionsQuery, GetProjectionsQueryVariables>;
+export const GetMessagesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMessages"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"messages"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"text"}}]}},{"kind":"Field","name":{"kind":"Name","value":"hello"}}]}}]} as unknown as DocumentNode<GetMessagesQuery, GetMessagesQueryVariables>;
+export const AddMessageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AddMessage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"text"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addMessage"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"text"},"value":{"kind":"Variable","name":{"kind":"Name","value":"text"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"text"}}]}}]}}]} as unknown as DocumentNode<AddMessageMutation, AddMessageMutationVariables>;
+export const ConfigureBucketsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ConfigureBuckets"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"configs"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"BucketConfigInput"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"configureBuckets"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"configs"},"value":{"kind":"Variable","name":{"kind":"Name","value":"configs"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"percentAlloc"}},{"kind":"Field","name":{"kind":"Name","value":"maxAmount"}},{"kind":"Field","name":{"kind":"Name","value":"spillOverOrder"}},{"kind":"Field","name":{"kind":"Name","value":"balance"}},{"kind":"Field","name":{"kind":"Name","value":"goal"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"targetAmount"}}]}}]}}]}}]} as unknown as DocumentNode<ConfigureBucketsMutation, ConfigureBucketsMutationVariables>;
