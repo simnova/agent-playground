@@ -48,11 +48,11 @@ export interface DepositCalculationResult {
  * - Remainder is amount that could not be placed (all buckets at cap, or % sum < 1 with no receiver).
  */
 export function calculateDepositAllocation(depositAmount: number, currentBuckets: BucketState[]): DepositCalculationResult {
-  if (!currentBuckets || currentBuckets.length === 0 || depositAmount <= 0) {
+  if (!currentBuckets || currentBuckets.length === 0 || !Number.isFinite(depositAmount) || depositAmount <= 0) {
     return {
       allocations: [],
       totalAllocated: 0,
-      remainder: Math.max(0, depositAmount),
+      remainder: Math.max(0, Number.isFinite(depositAmount) ? depositAmount : 0),
       projectedBalances: {},
     };
   }
