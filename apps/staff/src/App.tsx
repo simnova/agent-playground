@@ -653,6 +653,9 @@ function App() {
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }} data-e-ref="goals-list">
                   {goals.length ? goals.map(renderGoalCard) : <Typography.Text type="secondary">No goals.</Typography.Text>}
                 </div>
+                {/* Brief 6 mirror (motivational only): goal impact depth teaser reusing goal linking + livePreview. Full per-bucket/horizon/interactive + 7+ @e in public projections. Keeps prior staff @e untouched. */}
+                <div style={{ fontSize: 10, color: '#a1a1aa', marginTop: 4 }} data-e-ref="staff-goal-impact-mirror">Motivational mirror from public Brief 6: linked buckets (via hierarchy) will compound funding to goals over time — full interactive per-bucket/horizon/goal-over-time + slider in public Projections &amp; Long-term Outlook.</div>
+                <div style={{ fontSize: 9, color: '#71717a' }} data-e-ref="staff-proj-teaser-motivational">Current livePreview already shows this-deposit contributions flowing to goals (see cards + editor links).</div>
 
                 {/* Live Simulation Results (allocations, spill badges, projected) */}
                 <Typography.Title level={5} style={{ marginTop: 16, color: '#a1a1aa' }}>

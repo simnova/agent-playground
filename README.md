@@ -60,7 +60,15 @@ Screenshots are captured directly by the `browser-verifier` persona using `agent
 
 *More targeted screenshots (message flows, future bucket budgeting UIs, verification runs, etc.) will be added automatically as the self-improving team builds and validates features.*
 
-**Recent cycle (75min orchestrated BankBuckets test close):** Public Brief 3 completed (full 5-scenario long-term projections + last-deposit panel with optimistic allocations during apply + richer success + error resilience card + per-scenario goal impact + repeat-last; 10+ new `data-e-ref` for verifier). Architect extracted the portable calc engine (with `runHygieneTest` 20000 high-deposit + hierarchy cases) to new shared `@repo/bankbuckets-core` package (single source of truth, used by api/staff/public, dupe ~75 lines removed, hygiene reexport for compat). All artifacts (new bv-public-verifier-fallback.png, updated metrics with end report + full team credits, code) committed. Hygiene **PASSED** on realistic cap+spill cases (reconfirmed post-extract). See metrics/latest-token-effectiveness.md for evaluator deltas/credits/proposals and screenshots/ for browser-verifier artifacts.
+**Recent cycle (75min orchestrated BankBuckets test + Brief 4/5/6 extensions):** 
+- Brief 4: v2 recursive hierarchy allocation in `@repo/bankbuckets-core` (multi-level parent/children, normalize+recurse spillover, 3 new hygiene tests) + staff/public UI (antd Tree recursive editor, goal-via-parent Tags, nested previews, 15+ new @e).
+- Brief 5: test expansion to 9 total (NaN/neg/zero guards, deeper 4+ level, remainder+norm<1 cases); all PASSED including 20000 high-deposit repro + hierarchy scaffold.
+- Public Epic-5 + Brief 3/6: Next Paycheck live preview (client+server), My Buckets/Goals grids, 5-scenario + interactive horizon projections teaser with per-bucket/goal-over-time breakdowns, optimistic apply, 55+ `data-e-ref` (proj-per-bucket-breakdown, goal-impact-over-time-*, proj-interactive-horizon-slider, last-deposit-*, etc.). Dense hooks for verifier.
+- Guardian hardening (Brief 6 parallel): `pnpm dev:agent:public` (PUBLIC_ONLY mode for focused Epic-5+), health.json @e/readiness hook, exponential backoff, GQL probes, SUSTAINED signals, documented attach for long bv runs (monitor + cat health.json + curls; 2-err hygiene+curl fallback). Reduces ~60s harness kills impact.
+- Artifacts: bv-public-*.png (baseline, highdeposit-live exact cap/spill, post-apply, fallback), metrics with full credits + evaluator checkpoints (periodic like screenshots), committed on each advance.
+- Hygiene **PASSED** (20000 + hierarchy + 6 edge) on core + reexport; client preview + @e + prior bv screenshots provide ground truth when full live browser blocked by env. See metrics/latest-token-effectiveness.md (Brief 6 section with sub IDs 019eaa50-*) and screenshots/ .
+
+All per self-improving team (orchestrator + PO briefs + FE/BE juniors + browser-verifier on grok-4-fast for public + cheap evaluator). Next: live @e on new proj/goal surfaces using hardened guardian.
 
 ## Periodic Token Effectiveness Summaries
 

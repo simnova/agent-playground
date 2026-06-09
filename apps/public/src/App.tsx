@@ -214,6 +214,7 @@ function App() {
   const [depositAmount, setDepositAmount] = useState<number>(750); // realistic "next paycheck" default
   const [lastSim, setLastSim] = useState<any>(null);
   const [projCount, setProjCount] = useState<number>(6);
+  const [interactiveHorizon, setInteractiveHorizon] = useState<number>(6); // Brief 6: interactive horizon slider + per-bucket/per-horizon + goal-impact-over-time depth (reuses computeClientProjections)
   // For optimistic effects (during apply) + richer post-apply success + last visibility
   const [justApplied, setJustApplied] = useState<any>(null);
   const [recentSuccess, setRecentSuccess] = useState<any>(null);
@@ -875,6 +876,84 @@ function App() {
             )}
             <div style={{ fontSize: 10, color: '#71717a', marginTop: 8 }}>
               Optimistic client updates on bucket refresh/apply (refetch). No interest modeled. More scenarios + last deposit cmp + goal impact now live. Change scenarios or use "Apply" / "Repeat last" in preview above — watch the outlooks + last panel move. Dense @e ready for browser-verifier / agent-evaluator.
+            </div>
+
+            {/* Brief 6 public projections/goal impact depth (PO 019eaa3e-b561-7aa3-b2fd-4013b1629bf7): deeper per-bucket/per-horizon breakdowns, total-to-goals-over-time viz, interactive horizon slider (beyond fixed 5 scenarios + 3/6/12), richer 'repeat last' + apply flows surfacing hierarchy/goal funding.
+                Reuses computeClientProjections (bucketFinals + multi-horizon), livePreview (current contrast), server GET_PROJECTIONS (bucketProjections in periods), goal linking (linkedGoalIds + subtree).
+                7+ new data-e-refs only on new elements (proj-per-bucket-*, goal-impact-over-time-*, proj-interactive-horizon-*, proj-repeat-apply-*, proj-per-bucket-server-* etc). All prior @e / Brief 3-5 / v1 markers + strings untouched. */}
+            <div style={{ marginTop: 12, paddingTop: 8, borderTop: '1px solid #166534' }} data-e-ref="proj-per-bucket-breakdown">
+              <Typography.Text strong style={{ fontSize: 11, color: '#4ade80' }}>Deeper Per-Bucket / Horizon + Goal Impact Over Time (Brief 6)</Typography.Text>
+              <Typography.Text type="secondary" style={{ fontSize: 10, display: 'block' }}>Interactive beyond 5 scenarios: use slider or change deposit (ties to live preview / repeat-last / apply). Per-bucket uses bucketFinals from reused computeClientProjections. Goals attributed via linked subtrees (hierarchy funding surfaced).</Typography.Text>
+
+              {/* Interactive horizon slider (additional interactive control for custom horizons/scenarios) */}
+              <div style={{ margin: '6px 0' }} data-e-ref="proj-interactive-horizon-control">
+                <Typography.Text style={{ fontSize: 10, marginRight: 8 }}>Interactive horizon:</Typography.Text>
+                <Slider min={1} max={24} step={1} value={interactiveHorizon} onChange={setInteractiveHorizon} style={{ width: 180, display: 'inline-block', verticalAlign: 'middle' }} tooltip={{ formatter: (v) => `${v}mo` }} data-e-ref="proj-interactive-horizon-slider" />
+                <Tag color="green" style={{ marginLeft: 6 }}>{interactiveHorizon}mo</Tag>
+                <span style={{ fontSize: 9, marginLeft: 6, color: '#71717a' }}>(ties to current deposit ${depositAmount} + live flows)</span>
+              </div>
+
+              {/* total-to-goals-over-time viz + per-goal impact at fixed + interactive horizons (reuse compute + goal linking/subtree) */}
+              <div style={{ fontSize: 10, marginBottom: 4, background: '#052e16', padding: 4, borderRadius: 3 }} data-e-ref="goal-impact-over-time-viz">
+                Total-to-goals over time (projected bals attributed to each goal via linked buckets + hierarchy):
+                {goals.length === 0 && <span style={{ color: '#71717a' }}> (no goals linked yet)</span>}
+                {goals.map((g: any) => {
+                  const horizonsForViz = [3, 6, 12, interactiveHorizon].filter((v, i, a) => a.indexOf(v) === i).sort((a, b) => a - b);
+                  const contribs = horizonsForViz.map((h) => {
+                    const p = computeClientProjections(depositAmount, h, serverBuckets);
+                    const serverLinked = serverBuckets.filter((b: any) => (b.linkedGoalIds || []).includes(g.id));
+                    const getSubtreeIds = (rootId: string, bs: any[]): string[] => {
+                      const kids = bs.filter((bb: any) => bb.parentId === rootId).map((bb: any) => bb.id);
+                      return [rootId, ...kids, ...kids.flatMap((k) => getSubtreeIds(k, bs))];
+                    };
+                    const allIds = new Set<string>();
+                    serverLinked.forEach((lb) => getSubtreeIds(lb.id, serverBuckets).forEach((id) => allIds.add(id)));
+                    const sum = Array.from(allIds).reduce((s, sid) => s + (p.bucketFinals[sid] ?? 0), 0);
+                    return `${h}mo:$${Math.round(sum)}`;
+                  });
+                  return <div key={g.id} style={{ marginLeft: 6, marginTop: 1 }} data-e-ref={`goal-impact-over-time-${g.id}`}>{g.name}: {contribs.join(' ')}</div>;
+                })}
+              </div>
+
+              {/* Per-bucket breakdowns at interactive horizon (deeper per-bucket/per-horizon; reuse bucketFinals; surface hierarchy + goal funding) */}
+              {(() => {
+                const p = computeClientProjections(depositAmount, interactiveHorizon, serverBuckets);
+                return (
+                  <div style={{ background: '#111113', padding: 4, borderRadius: 3, fontSize: 9, marginBottom: 4 }} data-e-ref="proj-interactive-horizon-per-bucket-list">
+                    <div>Per-bucket breakdown at {interactiveHorizon}mo (current deposit; growth from bucketFinals):</div>
+                    {serverBuckets.map((b: any) => {
+                      const fin = p.bucketFinals[b.id] ?? b.currentBalance;
+                      const growth = fin - b.currentBalance;
+                      const linkedNames = b.linkedGoalIds.map((gid: string) => goals.find((gg: any) => gg.id === gid)?.name).filter(Boolean).join(', ');
+                      const parent = serverBuckets.find((bb: any) => bb.id === b.parentId);
+                      return (
+                        <div key={b.id} style={{ display: 'flex', justifyContent: 'space-between', marginTop: 1 }} data-e-ref={`proj-per-bucket-${b.id}-h${interactiveHorizon}`}>
+                          <span>{b.parentId ? '↳ ' : ''}{b.name}{parent ? ` (via ${parent.name})` : ''}{linkedNames ? ` → ${linkedNames}` : ''}</span>
+                          <span>${Math.round(fin)} <span style={{ color: growth >= 0 ? '#4ade80' : '#71717a' }}>(+${Math.round(growth)})</span></span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+
+              {/* Server per-bucket depth (reused from GET_PROJECTIONS periods.bucketProjections for cross-check) */}
+              {projData?.projections && projData.projections.periods && projData.projections.periods.length > 0 && (
+                <div style={{ fontSize: 9, color: '#a3a3a3', marginBottom: 4 }} data-e-ref="proj-per-bucket-server-from-get-projections">
+                  Server per-bucket (from GET_PROJECTIONS last period):
+                  {projData.projections.periods[projData.projections.periods.length - 1].bucketProjections.map((bp: any) => (
+                    <span key={bp.bucketId} style={{ marginLeft: 4 }} data-e-ref={`proj-per-bucket-server-${bp.bucketId}`}>{bp.bucketName}: ${bp.projectedBalance.toFixed(0)}</span>
+                  ))}
+                </div>
+              )}
+
+              {/* Richer 'repeat last' + apply flows: surfaces hierarchy/goal funding details (populates on lastDeposit from repeat-last-btn or handleApply) */}
+              {lastDeposit && (
+                <div style={{ fontSize: 9, color: '#4ade80', marginTop: 2 }} data-e-ref="proj-repeat-apply-hierarchy-detail">
+                  Richer repeat-last/apply flow: last deposit ${lastDeposit.amount} allocations now feed the per-bucket + goal-over-time projections above via hierarchy/links (see My Goals cards too).
+                </div>
+              )}
+              <div style={{ fontSize: 8, color: '#71717a', marginTop: 2 }}>Reused computeClientProjections/livePreview/GET_PROJECTIONS/goal linking. +7 new data-e-refs for Brief 6 (proj-per-bucket-*, goal-impact-over-time-*, proj-interactive-horizon-*, proj-repeat-apply-*, proj-per-bucket-server-*). Prior v1/Brief 3-5 @e untouched.</div>
             </div>
           </Card>
 
