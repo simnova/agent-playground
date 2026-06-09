@@ -17,6 +17,11 @@
 - Support descaling: cheap models can run simple verifications; escalate to stronger models only for complex diagnosis.
 - Always re-snapshot after mutations or re-renders — refs are fresh per snapshot.
 
+**Resilience & Anti-Loop (harness reality in this repo):**
+- Dev servers launched via pnpm are short-lived (~60s before harness kill, exit 143). Use the proven pattern: background launch + `monitor` (persistent) + `get_command_or_subagent_output` polling + aggressive pkill before re-launches + direct ports fallback.
+- If server errors repeat (after 2 attempts or obvious harness/port/mongo failures), immediately fallback: run the exact hygiene test via terminal (bun -e on deposit-calculator runHygieneTest), use curl for GraphQL seed/apply/currentState checks on the target high-deposit case, and report the env limitation explicitly while still delivering verification of the BankBuckets calc/apply behavior (PASSED hygiene + API evidence counts).
+- This avoids "doom loops" of repeating failing launch commands. The goal is trustworthy evidence of functionality, not perfect @e if the env blocks it.
+
 **Output Style:** Precise, command-by-command, with before/after snapshot excerpts, exact @e refs, what was expected vs observed, and clear handoffs. Include reproduction steps so issues are trivial to recreate.
 
 See the full Grok-native version in `.grok/personas/browser-verifier.toml` (includes detailed I/O contracts and collaboration rules with the evaluator/orchestrator).

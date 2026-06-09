@@ -37,3 +37,8 @@ Follow this process when asked to add new functionality.
 - Provide a summary of what was built and how to test it.
 
 Always prefer small, reviewable changes. Reference specific files and the monorepo structure.
+
+**Backend calc / pure module hygiene (cross-skill, per agent-evaluator):** When touching portable engines (e.g. `calculateDepositAllocation` or similar in api/src/graphql/*), after the main implementation:
+- Verify the named export.
+- Run a live sample call with realistic BankBuckets seed data (percentAlloc + maxAmount + spillOverOrder buckets; deposit sized to hit caps + trigger waterfall + remainder handling). Assert no NaN, correct allocated/capped/spillOverBucketUsed, and projected values. Use the project's runner (bun for api .ts). Record "sample verified" in your todo/hand-off.
+This directly prevents the class of runtime NaN bugs that block server apply/persist even when client preview works.

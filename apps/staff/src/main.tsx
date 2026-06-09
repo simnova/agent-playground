@@ -13,10 +13,19 @@ const rootElement = document.getElementById('root');
 if (!rootElement) {
   throw new Error('Failed to find the root element');
 }
+
+// Staff theme: blue primary (per AntdProvider + UI conventions; public uses green for customer-facing)
+const staffBlueTheme = {
+  token: {
+    colorPrimary: '#1677ff', // Classic antd blue for internal power tools / config UIs
+    borderRadius: 6,
+  },
+};
+
 createRoot(rootElement).render(
   <StrictMode>
     <ApolloProvider client={client}>
-      <AntdProvider>
+      <AntdProvider theme={staffBlueTheme}>
         <App />
       </AntdProvider>
     </ApolloProvider>

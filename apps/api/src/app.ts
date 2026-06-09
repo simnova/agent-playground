@@ -3,16 +3,26 @@ import { honoMiddleware } from 'apollo-server-integration-hono';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import mongoose from 'mongoose';
+import { MongoMemoryServer } from 'mongodb-memory-server';
 import type { GraphQLContext } from './graphql/context.js';
 import { resolvers } from './graphql/resolvers.js';
 import { typeDefs } from './graphql/schema.js';
 
 // Connect to MongoDB via Mongoose (ensures DB connection on server start)
-const MONGO_URI = process.env['MONGO_URI'] || 'mongodb://127.0.0.1:27017/agentplayground';
-await mongoose.connect(MONGO_URI);
-console.log(`✅ Mongoose connected to ${MONGO_URI}`);
+// Real models (Bucket, Goal, Deposit) are registered when imported by resolvers (see budget-models.ts)
+// For dev without external mongo (uses devDep mongodb-memory-server), fall back to in-memory.
+// This unblocks browser-verifier + dev runs when no local mongod (per fix sub context + mongo note in brief).
+let mongoServer: MongoMemoryServer | undefined;
+let effectiveUri = process.env['MONGO_URI'];
+if (!effectiveUri) {
+  mongoServer = await MongoMemoryServer.create({ instance: { dbName: 'agentplayground' } });
+  effectiveUri = mongoServer.getUri();
+  console.log(`✅ Using mongodb-memory-server for dev (no external MONGO_URI): ${effectiveUri}`);
+}
+await mongoose.connect(effectiveUri);
+console.log(`✅ Mongoose connected to ${effectiveUri}`);
 
-// In-memory demo store (replace with real DB in production)
+// In-memory demo store (messages only; keep separate from real Mongoose budgeting per task guidance)
 let messages: Array<{ id: string; text: string }> = [
   { id: '1', text: 'Welcome to the GraphQL demo!' },
   { id: '2', text: 'Hono + Apollo Server running great.' },
@@ -64,6 +74,7 @@ app.use(
             return msg;
           },
         },
+        // bucketsStore removed: budgeting now backed by real Mongoose models + portable calc (see resolvers + budget-models.ts + deposit-calculator.ts)
       }),
     } as any
   )

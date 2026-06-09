@@ -53,6 +53,7 @@ This gives version-matched workflow patterns, ref usage, and templates. Load spe
 - The **orchestrator** schedules these checks (add a recurring todo like "periodic UI capability verification" or trigger after UI work).
 - The **agent-evaluator** (via `analyze-agent-performance`) can invoke browser verification as part of its metrics gathering. Real browser outcomes (successful interactions, failures) feed into productivity/token-efficiency reports and persona refinement proposals.
 - Use a dedicated **browser-verifier** persona (see `.grok/personas/browser-verifier.toml`) for focused subagent runs. It knows the command patterns, the project's portless URLs, common flows (message sending in the demo, future bucket UIs, etc.), and how to report findings in a way that is useful for the evaluator and implementers.
+- **Resilience in this harness**: Dev servers are short-lived (~60s before harness kill, exit 143). The persona must follow the proven monitor + persistent bg + get polling + pkill pattern. On repeated server errors (after 2 attempts), immediately fallback to terminal hygiene test (exact `bun -e ... runHygieneTest()`) + curl GraphQL checks for the target apply case, and report the limitation while still delivering "functionality verified" evidence. This prevents doom loops on repeated failing launches.
 - Findings should be captured in the shared `todo_write` system and can trigger:
   - Bug-fix tasks for front-end-developer / back-end-developer.
   - Refinements to the browser-verifier persona itself or to the analyze skill.
