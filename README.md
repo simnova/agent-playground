@@ -60,6 +60,54 @@ Screenshots are captured directly by the `browser-verifier` persona using `agent
 
 *More targeted screenshots (message flows, future bucket budgeting UIs, verification runs, etc.) will be added automatically as the self-improving team builds and validates features.*
 
+## Periodic Token Effectiveness Summaries
+
+Just like the `browser-verifier` persona uses `agent-browser` to capture and commit real screenshots of the UIs as part of the work being accomplished (see `screenshots/` and the `verify-ui-with-browser` skill), the `agent-evaluator` periodically runs the `analyze-agent-performance` skill + `scripts/analyze-agent-logs.ts` to produce and commit human-readable token effectiveness summaries.
+
+These summaries are generated from live Grok logs (`unified.jsonl`, per-subagent `signals.json`/`summary.json`), tier usage, inference timings, and browser verification outcomes. They provide ongoing, data-backed proof of:
+
+- Successful use of cheap/fast "junior" models for the bulk of work
+- Effective escalation only when needed
+- Descaling back to low-cost agents for follow-up (with clean handoffs via todos)
+- Overall cost per unit of delivered value
+
+The files are committed to `metrics/` (dated + `latest-token-effectiveness.md`) as part of the accomplished work, exactly parallel to screenshots. This makes token efficiency visible and trackable over time on GitHub.
+
+**Latest Token Effectiveness Summary** (from a recent periodic run by the evaluator):
+
+See the full committed report: [metrics/latest-token-effectiveness.md](metrics/latest-token-effectiveness.md)
+
+Example excerpt (actual data from analyzer):
+
+```
+# Token Effectiveness Summary
+**Generated:** 2026-06-09T00:34:36.352Z
+**Workspace:** /Volumes/files/src/agentPlayground
+
+## Summary
+- **Distinct models seen:** grok-build
+- **Sampled inference turns:** 50
+- **Total sampled model time:** 353677 ms
+- **Subagents analyzed:** 1
+
+## Recent Inference Timing (model_elapsed_ms samples)
+(Lower times = cheaper/faster models doing the work)
+| Timestamp | Model Time (ms) |
+|-----------|-----------------|
+| ... | 2711 |
+| ... | 7756 |
+| ... | 3292 |
+...
+
+## Interpretation (for self-improvement)
+- High volume of low-ms turns indicates successful use of juniors.
+- Run this periodically via agent-evaluator to track shifts in tier utilization and cost per value.
+
+*This report is generated as part of the work being accomplished and committed for visibility (parallel to screenshots).*
+```
+
+As the team runs more cycles with the tiered models and browser verification, these summaries will show the progressive shift toward higher productivity at lower token cost. The `agent-evaluator` uses them (plus the full logs) to propose refinements to personas and the orchestrator's strategy.
+
 ## Getting Started
 
 ### Local Development with Portless (Recommended)
